@@ -20,6 +20,7 @@ install:
   - sudo sed -i 's/RUN.*/RUN="yes"/' /etc/default/npcd
   - sudo pip install okconfig
   - pip install 'Django<1.5'
+  - pip install simplejson
   - pip install https://github.com/pynag/pynag/zipball/master
   - python setup.py build
   - python setup.py install
