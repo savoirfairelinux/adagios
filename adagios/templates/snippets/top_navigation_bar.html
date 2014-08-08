@@ -3,19 +3,20 @@
 {% load i18n %}
 {% load url from future %}
 
-<div id="top_navigation_bar" class="navbar navbar-fixed-top" xmlns="http://www.w3.org/1999/html">
-    <div class="navbar-inner">
-        <div class="container-fluid" style="padding-right: 0px;">
-            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+<div id="top_navigation_bar" class="navbar navbar-default navbar-fixed-top" xmlns="http://www.w3.org/1999/html" role="navigation">
+    <div class="container-fluid" style="padding-right: 0px;">
+        <div >
+            <a class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </a>
 
             <!-- Logo in top nav -->
-            <a class="brand" href="{% url "home" %}">{{ settings.TOPMENU_HOME }}</a>
-            <div class="nav-collapse">
-                <ul class="nav" id="top_navigation_menuitems">
+            <a class="navbar-brand" href="{% url "home" %}">{{ settings.TOPMENU_HOME }}</a>
+
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav navbar-left" id="top_navigation_menuitems">
                   {% for item in settings.TOPMENU_ITEMS %}
                     <li class="{% if item.1|lower in urlname or item.1|lower in request.path %}active{% endif %}">
                       {% with item.2|slice:":1" as start %}
@@ -44,7 +45,7 @@
 
                 <!-- Right aligned navbar - MISC -->
 
-                <ul class="nav pull-right">
+                <ul class="nav navbar-nav navbar-right">
                     {% if not nagios_running %}
                         <li>
                             <form action="{% url "misc.views.nagios_service" %}" method="POST">
@@ -56,7 +57,7 @@
                     {% endif %}
 
                     <li class="nagios_needs_reload">
-                        <a  title="Nagios Service needs a reload for configuration changes to take effect." href="#">
+                        <a title="Nagios Service needs a reload for configuration changes to take effect." href="#">
                             <span id="nagios_needs_reload_button" class="hide">
                             <i  class="glyph-white glyph-refresh" onclick="adagios.misc.reload_nagios();"></i>
                             </span>
@@ -74,7 +75,7 @@
                     <li class="dropdown"><a><i class="glyph-grey glyph-clock"></i> {{ current_time }}</a></li>
                     {% get_current_language as curr_language %}
                     <li class="dropdown" id="user-drop-down">
-                        <a class="dropdown-toggle"
+                        <a class="dropdown"
                            data-toggle="dropdown"
                            href="#"><i class="glyph-user glyph-grey"></i> {{ remote_user }} ({{ curr_language }})
                             {% if tagged_comments %}({{ tagged_comments }}){% endif %}
