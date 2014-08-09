@@ -1,8 +1,6 @@
 /* Default theme for Adagios, using Bootstrap */
 
-/*
 @import url(../../css/import_contrib.css);
-*/
 
 @import url(../../external/bootstrap/css/bootstrap-3.2.0.min.css);
 @import url(../../external/bootstrap/css/bootstrap-theme-3.2.0.min.css);
