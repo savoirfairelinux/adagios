@@ -139,6 +139,7 @@ div.label.servicestate {
 
 /* Disable overflow in twitter bootstrap tabs */
 .tab-content {
+    padding: 15px;
     overflow: visible;
 }
 

@@ -25,7 +25,7 @@
                         {% else %}
                           <a href="{% url item.2%}" >
                         {% endif %}
-                        <i class="glyph-grey {{ item.3 }}"></i> {% trans item.0 %}
+                        <i class="glyphicon {{ item.3 }}"></i> {% trans item.0 %}
                         </a>
                       {% endwith %}
                     </li>
@@ -51,7 +51,7 @@
                             <form action="{% url "misc.views.nagios_service" %}" method="POST">
                                 {% csrf_token %}
                                 <input type="hidden" name="start" value="1" />
-                                <input type="image" src="{% static "img/tdot.png" %}" class="glyph-grey glyph-play-button" alt="start"/>
+                                <input type="image" src="{% static "img/tdot.png" %}" class="glyphicon glyphicon-play-circle" alt="start"/>
                             </form>
                         </li>
                     {% endif %}
@@ -59,25 +59,25 @@
                     <li class="nagios_needs_reload">
                         <a title="Nagios Service needs a reload for configuration changes to take effect." href="#">
                             <span id="nagios_needs_reload_button" class="hide">
-                            <i  class="glyph-white glyph-refresh" onclick="adagios.misc.reload_nagios();"></i>
+                                <span class="glyphicon glyphicon-refresh" onclick="adagios.misc.reload_nagios();"></span>
                             </span>
                         </a>
                     </li>
                     {% if num_problems and plugins.status  %}
                         <li style="color: red;">
                         <a style="color: red;" href="{% url "status.views.problems" %}?unhandled">
-                            <i class="glyph-grey  glyph-warning-sign" title="You have unhandled problems"></i>
+                            <span class="glyphicon glyphicon-warning-sign" title="You have unhandled problems"></span>
                             {{ num_problems }}
                         </a>
                         </li>
                     {% endif %}
 
-                    <li class="dropdown"><a><i class="glyph-grey glyph-clock"></i> {{ current_time }}</a></li>
+                    <li class="dropdown"><a><span class="glyphicon glyphicon-time"></span> {{ current_time }}</a></li>
                     {% get_current_language as curr_language %}
                     <li class="dropdown" id="user-drop-down">
                         <a class="dropdown"
                            data-toggle="dropdown"
-                           href="#"><i class="glyph-user glyph-grey"></i> {{ remote_user }} ({{ curr_language }})
+                           href="#"><span class="glyphicon glyphicon-user"></span> {{ remote_user }} ({{ curr_language }})
                             {% if tagged_comments %}({{ tagged_comments }}){% endif %}
                         </a>
                         <ul class="dropdown-menu">
@@ -99,7 +99,7 @@
                     {% if backends|length >= 2 %}
                     <li class="dropdown">
                       <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                        <i class="glyph-tags glyph-grey"></i>
+                        <span class="glyphicon glyphicon-tags"></span>
                       </a>
                       <ul class="dropdown-menu">
                         {% for backend in backends %}
@@ -116,7 +116,7 @@
                     <li class="dropdown">
                         <a class="dropdown-toggle"
                            data-toggle="dropdown"
-                           href="#"><i class="glyph-cogwheel glyph-grey"></i>
+                           href="#"><span class="glyphicon-cog glyphicon"></span>
                         </a>
                         <ul class="dropdown-menu">
                             <li><a href="https://github.com/opinkerfi/adagios/issues">{% trans "Report Bug" %}</a></li>

@@ -162,7 +162,7 @@ class PynagForm(AdagiosForm):
             self.pynag_object[k] = value
 
             # Additionally, update the field for the return form
-            self.fields[k] = self.get_pynagField(k, css_tag="defined")
+            self.fields[k] = self.get_pynagField(k, css_tag="form-control defined")
             self.fields[k].value = value
         self.pynag_object.save()
         adagios.misc.rest.add_notification(message=_("Object successfully saved"), level="success", notification_type="show_once")
@@ -188,10 +188,10 @@ class PynagForm(AdagiosForm):
             #    self.fields[field_name] = self.get_pynagField(field_name, css_tag='defined')
             if object_type == 'service' and field_name.startswith('$_SERVICE'):
                 self.fields[field_name] = self.get_pynagField(
-                    field_name, css_tag='defined')
+                    field_name, css_tag='form-control defined')
             elif object_type == 'host' and field_name.startswith('$_HOST'):
                 self.fields[field_name] = self.get_pynagField(
-                    field_name, css_tag='defined')
+                    field_name, css_tag='form-control defined')
 
         # Calculate what attributes are "undefined"
         self.undefined_attributes = []
@@ -204,16 +204,16 @@ class PynagForm(AdagiosForm):
         # Find out which attributes to show
         for field_name in defined_attributes:
             self.fields[field_name] = self.get_pynagField(
-                field_name, css_tag='defined')
+                field_name, css_tag='form-control defined')
         for field_name in inherited_attributes:
             self.fields[field_name] = self.get_pynagField(
-                field_name, css_tag="inherited")
+                field_name, css_tag="form-control inherited")
         for field_name in self.undefined_attributes:
             self.fields[field_name] = self.get_pynagField(
-                field_name, css_tag='undefined')
+                field_name, css_tag='form-control undefined')
         return
 
-    def get_pynagField(self, field_name, css_tag="", required=None):
+    def get_pynagField(self, field_name, css_tag="form_control", required=None):
         """ Takes a given field_name and returns a forms.Field that is appropriate for this field
 
           Arguments:
@@ -335,7 +335,7 @@ class PynagForm(AdagiosForm):
                 field, _('%(inherited_value)s (inherited from template)') % {'inherited_value': inherited_value})
 
         if field_name in MULTICHOICE_FIELDS:
-            self.add_css_tag(field=field, css_tag="multichoice")
+            self.add_css_tag(field=field, css_tag="form-control multichoice")
 
         return field
 

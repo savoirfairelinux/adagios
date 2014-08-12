@@ -181,8 +181,8 @@ TOPMENU_HOME = 'Adagios'
 TOPMENU_ITEMS = [
     # Name,        identifier,      view_url,                                icon
     # ('Nagvis',  'nagvis',        '/contrib/nagvis.html',                  'glyph-display'),
-    ('Configure', 'objectbrowser', 'objectbrowser.views.list_object_types', 'glyph-edit'),
-    ('Nagios',    'nagios',        'misc.views.nagios',                     'glyph-list'),
+    ('Configure', 'objectbrowser', 'objectbrowser.views.list_object_types', 'glyphicon-edit'),
+    ('Nagios',    'nagios',        'misc.views.nagios',                     'glyphicon-list'),
 
 ]
 

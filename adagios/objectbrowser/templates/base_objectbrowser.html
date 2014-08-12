@@ -5,26 +5,25 @@
 
 {% block page_content %}
     <div id="base_objectbrowser">
-        <div class="container-fluid content">
+        <div class="content">
 
-            <div class="row-fluid">
-                <div class="span12">
+            <div class="row">
+                <div class="col-lg-12">
                     <div class="block" id="page_header">
                         <!-- block page_header starts -->
                         {% block page_header %}
                             <ul class="breadcrumb">
                                 <li>
-                                    <a href="{% url "home" %}">{% trans "Home" %}</a> <span class="divider">/</span>
+                                    <a href="{% url "home" %}">{% trans "Home" %}</a>
                                 </li>
                                 <li>
                                     {% block nav1 %}
                                         <a href="{% url "objectbrowser" %}">objectbrowser</a>
                                     {% endblock %}
-                                    <span class="divider">/</span>
                                 </li>
                             </ul>
                             <h2>
-                                <i class="icon-th-large"></i> <small>{% block smallheader %}block=smallheader{% endblock%} </small> {% block largeheader %}block=largeheader{% endblock %}
+                                <i class="glyphicon glyphicon-th-large"></i> <small>{% block smallheader %}block=smallheader{% endblock%} </small> {% block largeheader %}block=largeheader{% endblock %}
                             </h2>
                         {% endblock %}
                         <!-- block page_header ends -->
@@ -32,14 +31,14 @@
                 </div>
             </div>
 
-            <div class="row-fluid">
+            <div class="row">
 
-                <div class="span9">
+                <div class="col-lg-10">
                     <div class="block">
                         <div class="message_overlay" id="error_messages">
                             {% if errors|length %}
                                 {%  for error in errors %}
-                                    <div class="alert">
+                                    <div class="alert alert-dismissable">
                                         <button class="close" data-dismiss="alert">×</button>
                                         <strong>{% trans "Warning!" %}</strong> {{ error }}
                                     </div>
@@ -47,7 +46,7 @@
                             {% endif %}
                             {% if messages|length %}
                                 {%  for message in messages  %}
-                                    <div class="alert alert-success">
+                                    <div class="alert alert-success alert-dismissable">
                                         <button class="close" data-dismiss="alert">×</button>
                                         <strong>{% trans "Info!" %}</strong> {{ message }}
                                     </div>
@@ -69,22 +68,22 @@
 
                 </div>
 
-                <div class="span3">
+                <div class="col-lg-2">
                     <div class="block">
                         <!-- block sidebar starts -->
                         {%  block sidebar %}
                             <div id="sidebar">
 
                                 <h5>{% trans "Actions" %}</h5>
-                                <ul class="nav nav-list">
+                                <ul class="navbar-stacked nav nav-list">
 
                                     {% if my_object %}
-                                        <li><a data-toggle="modal" href="#geek_edit"><i class="icon-pencil"></i> {% trans "Geek Edit" %}</a></li>
-                                        <li><a href="{%  url "objectbrowser.views.copy_object" my_object.id %}"><i class="icon-copy"></i>
+                                        <li><a data-toggle="modal" href="#geek_edit"><span class="glyphicon glyphicon-pencil"></span> {% trans "Geek Edit" %}</a></li>
+                                        <li><a href="{%  url "objectbrowser.views.copy_object" my_object.id %}"><span class="glyphicon glyphicon-file"></span>
 					    {% blocktrans with type=my_object.object_type %}
 					    Copy this {{ type }}
 					    {% endblocktrans %}</a></li>
-                                        <li><a href="{%  url "objectbrowser.views.delete_object" my_object.id %}"><i class="icon-trash"></i>
+                                        <li><a href="{%  url "objectbrowser.views.delete_object" my_object.id %}"><span class="glyphicon glyphicon-trash"></span>
 					    {% blocktrans with type=my_object.object_type %}Delete this {{  type }}
 					    {% endblocktrans %}</a></li>
                                     {% endif %}
@@ -92,25 +91,25 @@
                                     {% if plugins.status and my_object.object_type == 'service' and my_object.register == '1' %}
                                         <li>
                                             <a href="{% url "adagios.status.views.detail" %}?host_name={{  my_object.host_name }}&service_description={{  my_object.service_description }}">
-                                                <i class="glyph-table"></i> {% trans "Show Status information" %}</a>
+                                                <span class="glyphicon glyphicon-table"></span> {% trans "Show Status information" %}</a>
                                         </li>
                                     {% endif %}
 
                                     {% if plugins.status and  my_object.object_type == 'host' and my_object.register == '1' %}
                                         <li>
                                             <a href="{% url "adagios.status.views.detail" %}?host_name={{  my_object.host_name }}">
-                                                <i class="glyph-table"></i> {% trans "Show Status information" %}</a>
+                                                <span class="glyphicon glyphicon-tasks"></span> {% trans "Show Status information" %}</a>
                                         </li>
                                         <li>
                                             <a href="{%  url "objectbrowser.views.add_object" "service" %}?host_name={{ my_object.host_name }}">
-                                                <i class="icon-edit"></i> {% trans "Add Service Checks" %}
+                                                <span class="glyphicon glyphicon-edit"></span> {% trans "Add Service Checks" %}
                                             </a>
                                         </li>
 
                                     {% endif %}
 
                                     {% if my_object.action_url %}
-                                        <li><a href="{{ my_object.action_url }}"><i class="glyph-charts"></i> {% trans "View Graphs" %}</a></li>
+                                        <li><a href="{{ my_object.action_url }}"><span class="glyphicon glyphicon-charts"></span> {% trans "View Graphs" %}</a></li>
                                     {%  endif %}
 
 
@@ -119,7 +118,7 @@
                                 <h5>{% trans "Diagnostics" %}</h5>
                                 <ul class="nav nav-list">
                                     {% if command_line and form.host_name.value and form.register != '0' %}
-                                        <li><a data-toggle="modal" href="#run_check_plugin"><i class="icon-play"></i> {% trans "Run Check Plugin" %}</a></li>
+                                        <li><a data-toggle="modal" href="#run_check_plugin"><i class="glyphicon glyphicon-play"></i> {% trans "Run Check Plugin" %}</a></li>
                                     {% endif %}
                                 </ul>
                                 <hr/>
