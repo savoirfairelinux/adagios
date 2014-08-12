@@ -108,8 +108,12 @@
       <div class="list-group">
         <a class="list-group-item active">{% trans "Experimental Views" %}</a>
 
-        <a class="list-group-item{% if request.path_info == '/status/custom/edit' %} list-group-item-info{% endif %}">
-          <a class="list-group-item list-group-item-success" href="" id="toggle_select_new_view">{% trans "+New view" %}</a>
+        {% for view in user_data.views %}
+        <a class="list-group-item{% if '/status/custom/edit/'|add:view == request.path_info or '/status/custom/view/'|add:view == request.path_info %} list-group-item-info{% endif %}" href="{% url "status.views.custom_view" view %}">{{ view }}<div class="pull-right" onclick="document.location='{% url "status.views.custom_edit" view %}';"><i class="glyph-grey glyph-edit pull-right" onclick="document.location='{% url "status.views.custom_edit" view %}';"></i></div>
+          </a>
+        {% endfor %}
+        <a class="{% if request.path_info == '/status/custom/edit' %} list-group-item-info{% endif %}">
+          <a class="list-group-item list-group-item-success" id="toggle_select_new_view">{% trans "+New view" %}</a>
           <div id="div_new_view" style="display: none;">
           <select id="select_new_view">
             <option value="None" selected="selected">{% trans "Datasource" %}</option>
@@ -120,11 +124,6 @@
           </div>
         </li>
       </div>
-        <hr />
-        {% for view in user_data.views %}
-          <a class="list-group-item{% if '/status/custom/edit/'|add:view == request.path_info or '/status/custom/view/'|add:view == request.path_info %} list-group-item-info{% endif %}" href="{% url "status.views.custom_view" view %}" >{{ view }}<a href="{% url "status.views.custom_edit" view %}" class="pull-right custom-view-edit"><i class="glyph-grey glyph-edit"></i></a>
-          </a>
-        {% endfor %}
       </ul>
     </div>
     {% endblock left_sidebar %}
