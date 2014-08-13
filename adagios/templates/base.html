@@ -28,6 +28,9 @@
     <link rel="apple-touch-icon-precomposed"
           href="{% static "ico/apple-touch-icon-57-precomposed.png" %}">
 
+    {% comment %}Use bower for this whenever ready{% endcomment %}
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css">
+
     <!-- Block header starts -->
     {%  block header %}{% endblock %}
     <!-- Block header ends -->
@@ -65,7 +68,7 @@
 
     <!-- block left_sidebar starts -->
     {% block left_sidebar %}
-    <div class="pull-left visible-lg panel panel-default" id="left_sidebar">
+    <div class="pull-left visible-lg panel panel-default col-lg-2" id="left_sidebar">
       <div class="list-group">
         <a class="list-group-item active">{% trans "Shortcuts" %}</a>
         <a class="list-group-item{% if urlname == 'adagios.status.views.status_index' %} list-group-item-info{% endif %}" href="{% url "status.views.status_index" %}">{% trans "Status Overview" %} </a>

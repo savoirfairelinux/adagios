@@ -34,12 +34,19 @@ input.inherited  {
   font-weight: bold;
 }
 
+/*Left sidebar*/
+#left_sidebar .list-group-item {
+    border-top: 0px;
+    border-bottom: 0px;
+}
+
 .breadcrumb {
     border: 0;
     margin: 0;
     padding: 0 14px;
     background: transparent none;
 }
+
 .block {
   background: #fff;
   margin: 6px;
@@ -314,10 +321,6 @@ button.close.notification {
 
 #left_sidebar a {
     font-weight: normal;
-}
-
-#left_sidebar .nav-header {
-    color: black;
 }
 
 #left_sidebar hr {

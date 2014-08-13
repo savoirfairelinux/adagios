@@ -408,10 +408,20 @@ class AdvancedEditForm(AdagiosForm):
             if field_name in object_definitions[object_type]:
                 help_text = object_definitions[object_type][field_name].get(
                     'help_text', _("No help available for this item"))
-            self.fields[field_name] = forms.CharField(
+            new_field = forms.CharField(
                 required=False, label=field_name, help_text=help_text)
+            self.add_css_tag(field=new_field, css_tag="form-control")
+            self.fields[field_name] = new_field
+            
         self.fields.keyOrder = sorted(self.fields.keys())
 
+    def add_css_tag(self, field, css_tag):
+        """ Add a CSS tag to the widget of a specific field """
+        if not 'class' in field.widget.attrs:
+            field.widget.attrs['class'] = ''
+            field.css_tag = ''
+        field.widget.attrs['class'] += " " + css_tag
+        field.css_tag += " " + css_tag
 
 class GeekEditObjectForm(AdagiosForm):
     definition = forms.CharField(

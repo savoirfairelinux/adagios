@@ -47,7 +47,7 @@
                             {
                                 "cName": "service_description",
                                 "cAltName": "name",
-                                "icon": "glyph-computer-service"
+                                "icon": "fa fa-dashboard"
                             },
                             {
                                 "cName": "check_command",
@@ -66,7 +66,7 @@
                             {
                                 "cName": "servicegroup_name",
                                 "cAltName": "name",
-                                "icon": "glyph-more-items"
+                                "icon": "fa fa-sitemap"
                             },
                             { "cName": "check_command" },
                             { "cName": "shortname" }
@@ -187,7 +187,7 @@
         $(window).bind('resize', function() {
             $('table.objecttable.dataTable').ob_check_datatable_column_visibility();
         });
-        $('a[data-toggle="tab"]').on('show', function (e) {
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             var id = $(e.target).attr('href').split("-")[0];
             if ( ! $.fn.DataTable.fnIsDataTable($('table' + id + "-table")[0])) {
                 console.log('Rendering datatable table' + id + "-table");
@@ -235,11 +235,11 @@
 {% block content %}
                 <div id="objectbrowser">
                     <ul class="nav nav-tabs" id="objecttabs">
-                        <li><a href="#host-tab" data-toggle="tab"><i class="glyph-computer-locked"></i> {% trans "Hosts" %}</a></li>
-                        <li><a href="#service-tab" data-toggle="tab"><i class="glyph-computer-service"></i> {% trans "Services" %}</a></li>
-                        <li><a href="#contact-tab" data-toggle="tab"><i class="icon-user"></i>Contacts</a></li>
-                        <li><a href="#command-tab" data-toggle="tab"><i class="glyph-computer-proces"></i> {% trans "Commands" %}</a></li>
-                        <li><a href="#timeperiod-tab" data-toggle="tab"><i class="glyph-clock"></i> {% trans "Timeperiods" %}</a></li>
+                        <li><a href="#host-tab" data-toggle="tab"><i class="fa fa-desktop"></i> {% trans "Hosts" %}</a></li>
+                        <li><a href="#service-tab" data-toggle="tab"><i class="fa fa-dashboard"></i> {% trans "Services" %}</a></li>
+                        <li><a href="#contact-tab" data-toggle="tab"><i class="fa fa-user"></i> Contacts</a></li>
+                        <li><a href="#command-tab" data-toggle="tab"><i class="fa fa-terminal"></i> {% trans "Commands" %}</a></li>
+                        <li><a href="#timeperiod-tab" data-toggle="tab"><i class="fa fa-clock-o"></i> {% trans "Timeperiods" %}</a></li>
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane" id="command-tab">
