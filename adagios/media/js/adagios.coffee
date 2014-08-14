@@ -355,9 +355,9 @@ $.extend $.fn.dataTableExt.oStdClasses,
             </ul>
           </div>
           <div id="modify" class="btn-group pull-left">
-            <a rel="tooltip" id="copy" title="Copy" class="btn btn-important" data-target-bulk="bulk_copy" data-target="copy"><i class="icon-copy"></i></a>
-            <a rel="tooltip" id="update" title="Edit" class="btn" data-target-bulk="bulk_edit" data-target="edit"><i class="glyph-pencil"></i></a>
-            <a rel="tooltip" id="delete" title="Delete" class="btn" data-target-bulk="bulk_delete" data-target="delete"><i class="glyph-bin"></i></a>
+            <a rel="tooltip" id="copy" title="Copy" class="btn btn-important" data-target-bulk="bulk_copy" data-target="copy"><i class="fa fa-files-o"></i></a>
+            <a rel="tooltip" id="update" title="Edit" class="btn" data-target-bulk="bulk_edit" data-target="edit"><i class="fa fa-pencil"></i></a>
+            <a rel="tooltip" id="delete" title="Delete" class="btn" data-target-bulk="bulk_delete" data-target="delete"><i class="fa fa-trash-o"></i></a>
           </div>
           <div id="view_filter" class="btn-group pull-right"></div>
         </div>
@@ -393,13 +393,13 @@ $.extend $.fn.dataTableExt.oStdClasses,
       <li class="divider"></li>"""
       $(".toolbar_#{ object_type } div#view_filter.btn-group").append """
       <a rel="tooltip" title="Show #{ object_type }s" class="btn active" data-filter-type="0">
-        <i class="glyph-computer-service"></i>
+        <i class="fa fa-circle"></i>
       </a>
       <a rel="tooltip" title="Show #{ object_type }groups" class="btn" data-filter-type="1">
-        <i class="glyph-parents"></i>
+        <i class="fa fa-sitemap"></i>
       </a>
       <a rel="tooltip" title="Show #{ object_type } templates" class="btn" data-filter-type="2">
-        <i class="glyph-cogwheels"></i>
+        <i class="fa fa-code-fork"></i>
       </a>"""
 
       filter_cache[object_type] = "0"
