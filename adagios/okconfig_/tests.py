@@ -37,6 +37,7 @@ class TestOkconfig(unittest.TestCase):
     def testIndexPage(self):
         c = Client()
         response = c.get('/okconfig/verify_okconfig')
+        raise Exception(response.data)
         self.assertEqual(response.status_code, 200)
 
     def testPageLoad(self):
