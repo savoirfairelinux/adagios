@@ -20,7 +20,7 @@ install:
   - sudo sed -i 's/RUN.*/RUN="yes"/' /etc/default/npcd
   - deactivate
   - sudo rm -r ~/virtualenv/python*
-  - sudo pip install okconfig
+  - sudo apt-get install okconfig
   - virtualenv ~/virtualenv/python2.6 --system-site-packages
   - source ~/virtualenv/python2.6/bin/activate
   - pip install https://github.com/pynag/pynag/zipball/master
