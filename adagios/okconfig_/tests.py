@@ -37,7 +37,6 @@ class TestOkconfig(unittest.TestCase):
     def testIndexPage(self):
         c = Client()
         response = c.get('/okconfig/verify_okconfig')
-        raise Exception(response.data)
         self.assertEqual(response.status_code, 200)
 
     def testPageLoad(self):
@@ -57,7 +56,6 @@ class TestOkconfig(unittest.TestCase):
         try:
             c = Client()
             response = c.get(url)
-            raise Exception(response, response.status_code, response.data)
             self.assertEqual(response.status_code, 200, _("Expected status code 200 for page %s") % url)
         except Exception, e:
             self.assertEqual(True, _("Unhandled exception while loading %(url)s: %(e)s") % {'url': url, 'e': e})

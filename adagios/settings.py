@@ -310,6 +310,8 @@ if enable_status_view:
 if enable_bi:
     plugins['bi'] = 'adagios.bi'
 
+plugins['okconfig'] = 'adagios.okconfig_'
+
 for k, v in plugins.items():
     INSTALLED_APPS.append(v)
 
