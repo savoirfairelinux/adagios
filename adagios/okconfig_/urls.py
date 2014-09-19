@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf.urls import patterns, url, include
-from django.conf import settings
+from django.conf.urls import patterns
 
 urlpatterns = patterns('adagios',
 
@@ -29,6 +28,5 @@ urlpatterns = patterns('adagios',
                       (r'^/install_agent/?', 'okconfig_.views.install_agent'),
                       (r'^/edit/?$', 'okconfig_.views.choose_host'),
                       (r'^/edit/(?P<host_name>.+)$', 'okconfig_.views.edit'),
-                      (r'^/verify_okconfig/?',
-                       'okconfig_.views.verify_okconfig'),
-                       )
+                      (r'^/verify_okconfig/?', 'okconfig_.views.verify_okconfig'),
+)
