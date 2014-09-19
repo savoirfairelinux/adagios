@@ -26,6 +26,7 @@ from django.conf.urls.static import static
 # from django.contrib import admin
 # admin.autodiscover()
 
+
 urlpatterns = patterns('',
     # Example:
     url(r'^$', 'adagios.views.index', name="home"),
@@ -37,6 +38,8 @@ urlpatterns = patterns('',
     url(r'^media(?P<path>.*)$',         serve, {'document_root': settings.MEDIA_ROOT }),
     url(r'^rest', include('adagios.rest.urls')),
     url(r'^contrib', include('adagios.contrib.urls')),
+
+    url(r'^okconfig', include('adagios.okconfig_.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
