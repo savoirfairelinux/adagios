@@ -31,8 +31,12 @@ class TestOkconfig(unittest.TestCase):
 
     def testOkconfigVerifies(self):
         result = okconfig.verify()
-        for k, v in result.items():
-            self.assertTrue(v, msg=_("Failed on test: %s") % k)
+        self.assertTrue(
+            all(result.values()),
+            'Following verifications failed:\n' + '\n'.join(
+                ' -> %s : %s' % (res, isok) for res, isok in result.items() if not isok
+            )
+        )
 
     def testIndexPage(self):
         c = Client()
