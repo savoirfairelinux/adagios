@@ -57,9 +57,7 @@ class TestOkconfig(unittest.TestCase):
         self.loadPage('/okconfig/verify_okconfig')
     def loadPage(self, url):
         """ Load one specific page, and assert if return code is not 200 """
-        try:
-            c = Client()
-            response = c.get(url)
-            self.assertEqual(response.status_code, 200, _("Expected status code 200 for page %s") % url)
-        except Exception, e:
-            self.assertEqual(True, _("Unhandled exception while loading %(url)s: %(e)s") % {'url': url, 'e': e})
+        c = Client()
+        rsp = c.get(url)
+        self.assertEqual(rsp.status_code, 200,
+                         "Expected status code 200 for page %s but got %s" % (url, rsp.status_code))

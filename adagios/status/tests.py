@@ -108,12 +108,14 @@ class LiveStatusTestCase(unittest.TestCase):
         request = self.factory.get('/status/state_history')
         adagios.status.views.state_history(request)
 
-    def loadPage(self, url, expected_status_code=200):
+    def loadPage(self, url, expected_code=200):
         """ Load one specific page, and assert if return code is not 200 """
         c = Client()
-        response = c.get(url)
-        self.assertEqual(response.status_code, expected_status_code, _("Expected status code %(code)s for page %(url)s") % {'code': expected_status_code, 'url': url})
-        return response
+        rsp = c.get(url)
+        self.assertEqual(rsp.status_code, expected_code,
+                         "Expected status code {expected_code} for page {url}, but got {rsp.status_code}".format(
+                             **locals()))
+        return rsp
 
     def testSubmitCommand(self):
         """ Test adagios.rest.status.submit_check_results

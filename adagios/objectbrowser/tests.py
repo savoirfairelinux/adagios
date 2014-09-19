@@ -73,9 +73,8 @@ class TestObjectBrowser(unittest.TestCase):
 
     def loadPage(self, url, expected_code=200):
         """ Load one specific page, and assert if return code is not 200 """
-        try:
-            c = Client()
-            response = c.get(url)
-            self.assertEqual(response.status_code, expected_code, _("Expected status code 200 for page %(url)s") % {'url': url})
-        except Exception, e:
-            self.assertEqual(True, _("Unhandled exception while loading %(url)s: %(error)s") % {'url': url, 'error': e})
+        c = Client()
+        rsp = c.get(url)
+        self.assertEqual(rsp.status_code, expected_code,
+                         "Expected status code {expected_code} for page {url}, "
+                         "but got {rsp.status_code}".format(**locals()))
