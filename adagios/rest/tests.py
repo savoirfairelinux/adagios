@@ -40,18 +40,13 @@ class LiveStatusTestCase(unittest.TestCase):
         self.loadPage('/rest/adagios.js')
 
     def testDnsLookup(self):
-        """ Test the DNS lookup rest call
-        """
-        path = "/rest/pynag/json/dnslookup"
-        data = {'host_name': 'localhost'}
-        try:
-            c = Client()
-            response = c.post(path=path, data=data)
-            json_data = json.loads(response.content)
-            self.assertEqual(response.status_code, 200, _("Expected status code 200 for page %s") % path)
-            self.assertEqual(True, 'addresslist' in json_data, _("Expected 'addresslist' to appear in response"))
-        except KeyError, e:
-            self.assertEqual(True, _("Unhandled exception while loading %(path)s: %(exc)s") % {'path': path, 'exc': e})
+        """ Test the DNS lookup rest call """
+        path="/rest/pynag/json/dnslookup"
+        c = Client()
+        response = c.post(path=path, data={'host_name': 'localhost'})
+        self.assertEqual(response.status_code, 200, "Expected status code 200 for page %s" % path)
+        json_data = json.loads(response.content)
+        self.assertIn('addresslist', json_data, "Expected 'addresslist' to appear in response")
 
 
     def loadPage(self, url):

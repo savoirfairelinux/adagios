@@ -44,6 +44,9 @@ def _load(module_path):
 def handle_request(request, module_name, module_path, attribute, format):
     m = _load(module_path)
     # TODO: Only allow function calls if method == POST
+    # TODO: clean up this function:
+    #  - shouldn't need the inspect.getmembers()
+    #  - simplify
     members = {}
     for k, v in inspect.getmembers(m):
         members[k] = v
@@ -76,14 +79,10 @@ def handle_request(request, module_name, module_path, attribute, format):
                 arguments['request'] = request
             result = item(**arguments)
     elif request.method == 'POST':
-        item = members[attribute]
         if not inspect.isfunction(item):
             result = item
         else:
-            arguments = {}  # request.POST.items()
-            # request.POST has been replaced by request.body between Django 1.4-1.6
-            for k, v in QueryDict(request.body).items():
-                arguments[k.encode('utf-8')] = v.encode('utf-8')
+            arguments = dict(request.POST.items())
             # Here is a special hack, if the method we are calling has an argument
             # called "request" we will not let the remote user ship it in.
             # instead we give it a django request object
