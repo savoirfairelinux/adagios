@@ -45,6 +45,9 @@ install:
   - mkdir -p /etc/nagios3/adagios
   - pynag config --append cfg_dir=/etc/nagios3/adagios
   - cd /etc/nagios3/
+  - mkdir -p okconfig/templates
+  - mkdir -p okconfig/examples
+  - echo "this is required for adagios:"
   - git config --global user.email "noreply@travis-ci.org"
   - git config --global user.name "Adagios buildbot running inside travis"
   - git init
