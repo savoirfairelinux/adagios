@@ -18,17 +18,24 @@ install:
   - sudo chown -R travis /etc/adagios/
   - sudo usermod -G www-data nagios
   - sudo sed -i 's/RUN.*/RUN="yes"/' /etc/default/npcd
-  - deactivate
-  - sudo rm -r ~/virtualenv/python*
-  - sudo pip install okconfig
-  - virtualenv ~/virtualenv/python2.6 --system-site-packages
-  - source ~/virtualenv/python2.6/bin/activate
-  - pip install https://github.com/pynag/pynag/zipball/master
+  # okconfig can only be installed with root privileges:
+  - deactivate # first deactivate the current env.
+  - rm -r ~/virtualenv/python* # and delete it
+  - sudo pip install okconfig # sudo install okconfig
+  - virtualenv ~/virtualenv/python --system-site-packages # then reinstall virtualenv with system-site-packages
+  - source ~/virtualenv/python/bin/activate
+  - python --version && pip --version
+  # ..done.
+  # continue with package requirements
   - pip install -r requirements.txt
+  - pip install -r requirements.tests.txt
+  # now build adagios:
   - python setup.py build
-  # hack to not trigger error with unittest module discovery (https://travis-ci.org/savoirfairelinux/adagios/builds/31937339)
-  # Only 'develop' doesn't work as Adagios installs files e.g. in /etc/adagios
-  - python setup.py install && python setup.py develop
+  - echo "hack to not trigger error with unittest module discovery (https://travis-ci.org/savoirfairelinux/adagios/builds/31937339)"
+  - echo "Only 'develop' doesn't work as Adagios installs files e.g. in /etc/adagios"
+  - python setup.py install
+  - python setup.py develop
+  # hack done.
   - pynag config --append "broker_module=/usr/lib/check_mk/livestatus.o /var/lib/nagios3/rw/livestatus"
   - pynag config --set "process_performance_data=1"
   - pynag config --append "broker_module=/usr/lib/pnp4nagios/npcdmod.o config_file=/etc/pnp4nagios/npcd.cfg"
