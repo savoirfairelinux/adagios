@@ -17,20 +17,23 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
 from django.utils import unittest
 from django.test.client import Client
 from django.utils.translation import ugettext as _
-
-import pynag.Parsers
-import os
 from django.test.client import RequestFactory
-import adagios.status
-import adagios.status.utils
+
+from adagios.test.fix_config_paths import fixit
+fixit()
+
+
+import adagios
 import adagios.status.graphite
-import adagios.settings
 import adagios.utils
 from adagios.test.tools import LoadPage
 
+import pynag.Parsers
 
 
 

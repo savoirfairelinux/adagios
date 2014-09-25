@@ -17,15 +17,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 from django.utils import unittest
-from django.test.client import Client
-from django.utils.translation import ugettext as _
+
+
+from adagios.test.fix_config_paths import fixit
+# should be done as early as possible :
+fixit()
+
+from adagios.test.tools import LoadPage
 
 import okconfig
-import adagios.settings
-
-okconfig.cfg_file = adagios.settings.nagios_config
-from adagios.test.tools import LoadPage
 
 #############################################################################
 
