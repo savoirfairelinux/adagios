@@ -33,10 +33,11 @@ from django.test.client import Client
 from django.utils.translation import ugettext as _
 
 from adagios.bi import *
+from adagios.test.tools import LoadPage
 import adagios.utils
 
 
-class TestBusinessProcess(TestCase):
+class TestBusinessProcess(LoadPage, TestCase):
     def setUp(self):
         fd, filename = tempfile.mkstemp()
         BusinessProcess._default_filename = filename
@@ -151,14 +152,6 @@ class TestBusinessProcess(TestCase):
         self.loadPage('/bi/add/subprocess')
         self.loadPage('/bi/add/graph')
 
-    def loadPage(self, url):
-        """ Load one specific page, and assert if return code is not 200 """
-        try:
-            c = Client()
-            response = c.get(url)
-            self.assertEqual(response.status_code, 200, _("Expected status code 200 for page %s") % url)
-        except Exception, e:
-            self.assertEqual(True, "Unhandled exception while loading %s: %s" % (url, e))
 
 
 class TestBusinessProcessLogic(TestCase):

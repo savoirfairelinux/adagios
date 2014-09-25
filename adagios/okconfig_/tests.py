@@ -25,9 +25,11 @@ import okconfig
 import adagios.settings
 
 okconfig.cfg_file = adagios.settings.nagios_config
+from adagios.test.tools import LoadPage
 
+#############################################################################
 
-class TestOkconfig(unittest.TestCase):
+class TestOkconfig(LoadPage, unittest.TestCase):
 
     def testOkconfigVerifies(self):
         result = okconfig.verify()
@@ -39,9 +41,7 @@ class TestOkconfig(unittest.TestCase):
         )
 
     def testIndexPage(self):
-        c = Client()
-        response = c.get('/okconfig/verify_okconfig')
-        self.assertEqual(response.status_code, 200)
+        self.loadPage('/okconfig/verify_okconfig')
 
     def testPageLoad(self):
         """ Smoketest for the okconfig views """
@@ -55,9 +55,5 @@ class TestOkconfig(unittest.TestCase):
         self.loadPage('/okconfig/edit')
         self.loadPage('/okconfig/edit/localhost')
         self.loadPage('/okconfig/verify_okconfig')
-    def loadPage(self, url):
-        """ Load one specific page, and assert if return code is not 200 """
-        c = Client()
-        rsp = c.get(url)
-        self.assertEqual(rsp.status_code, 200,
-                         "Expected status code 200 for page %s but got %s" % (url, rsp.status_code))
+
+

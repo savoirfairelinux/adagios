@@ -19,6 +19,7 @@
 
 from django.utils import unittest
 from django.test.client import Client
+from adagios.test.tools import LoadPage
 import adagios.utils
 import os
 
@@ -56,7 +57,7 @@ class FakeAdagiosEnvironment(unittest.TestCase):
         self.assertTrue(adagios.settings.adagios_configfile == global_config_file)
 
 
-class MiscTestCase(unittest.TestCase):
+class MiscTestCase(LoadPage, unittest.TestCase):
 
     def setUp(self):
         self.environment = adagios.utils.FakeAdagiosEnvironment()
@@ -83,14 +84,6 @@ class MiscTestCase(unittest.TestCase):
         self.loadPage("/misc/mail")
         self.loadPage("/misc/images")
 
-    def loadPage(self, url):
-        """ Load one specific page, and assert if return code is not 200 """
-        try:
-            c = Client()
-            response = c.get(url)
-            self.assertEqual(response.status_code, 200, _("Expected status code 200 for page %s") % url)
-        except Exception, e:
-            self.assertEqual(True, _("Unhandled exception while loading %(url)s: %(e)s") % {'url': url, 'e': e})
 
     def test_user_preferences(self):
         c = Client()

@@ -22,13 +22,15 @@ unittest). These will both pass when you run "manage.py test".
 Replace these with more appropriate tests for your application.
 """
 
-from django.utils import unittest
-from django.test.client import Client
-from django.utils.translation import ugettext as _
 import json
 
+from django.utils import unittest
+from django.test.client import Client
 
-class LiveStatusTestCase(unittest.TestCase):
+from adagios.test.tools import LoadPage
+
+
+class LiveStatusTestCase(LoadPage, unittest.TestCase):
     def testPageLoad(self):
         """ Smoke Test for various rest modules """
         self.loadPage('/rest')
@@ -41,19 +43,8 @@ class LiveStatusTestCase(unittest.TestCase):
 
     def testDnsLookup(self):
         """ Test the DNS lookup rest call """
-        path="/rest/pynag/json/dnslookup"
-        c = Client()
-        response = c.post(path=path, data={'host_name': 'localhost'})
-        self.assertEqual(response.status_code, 200, "Expected status code 200 for page %s" % path)
-        json_data = json.loads(response.content)
+        path = "/rest/pynag/json/dnslookup"
+        rsp = self.loadPage(path, method=Client.post, data={'host_name':'localhost'})
+        json_data = json.loads(rsp.content)
         self.assertIn('addresslist', json_data, "Expected 'addresslist' to appear in response")
 
-
-    def loadPage(self, url):
-        """ Load one specific page, and assert if return code is not 200 """
-        try:
-            c = Client()
-            response = c.get(url)
-            self.assertEqual(response.status_code, 200, _("Expected status code 200 for page %s") % url)
-        except Exception, e:
-            self.assertEqual(True, _("Unhandled exception while loading %(url)s: %(exc)s") % {'url': url, 'exc': e})

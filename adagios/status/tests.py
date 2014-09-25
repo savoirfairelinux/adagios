@@ -29,9 +29,12 @@ import adagios.status.utils
 import adagios.status.graphite
 import adagios.settings
 import adagios.utils
+from adagios.test.tools import LoadPage
 
 
-class LiveStatusTestCase(unittest.TestCase):
+
+
+class LiveStatusTestCase(LoadPage, unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -108,14 +111,6 @@ class LiveStatusTestCase(unittest.TestCase):
         request = self.factory.get('/status/state_history')
         adagios.status.views.state_history(request)
 
-    def loadPage(self, url, expected_code=200):
-        """ Load one specific page, and assert if return code is not 200 """
-        c = Client()
-        rsp = c.get(url)
-        self.assertEqual(rsp.status_code, expected_code,
-                         "Expected status code {expected_code} for page {url}, but got {rsp.status_code}".format(
-                             **locals()))
-        return rsp
 
     def testSubmitCommand(self):
         """ Test adagios.rest.status.submit_check_results

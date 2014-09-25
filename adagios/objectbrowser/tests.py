@@ -23,10 +23,12 @@ from django.utils.translation import ugettext as _
 
 import pynag.Model
 import adagios.settings
+from adagios.test.tools import LoadPage
+
 pynag.Model.cfg_file = adagios.settings.nagios_config
 
 
-class TestObjectBrowser(unittest.TestCase):
+class TestObjectBrowser(LoadPage, unittest.TestCase):
 
     def testNagiosConfigFile(self):
         result = pynag.Model.ObjectDefinition.objects.all
@@ -35,9 +37,7 @@ class TestObjectBrowser(unittest.TestCase):
             len(result), 0, msg=_("Parsed nagios.cfg, but found no objects, are you sure this is the right config file (%(config)s) ? ") % {'config': config})
 
     def testIndexPage(self):
-        c = Client()
-        response = c.get('/objectbrowser/')
-        self.assertEqual(response.status_code, 200)
+        self.loadPage('/objectbrowser/')
 
     def testPageLoad(self):
         """ Smoke test a bunch of views """
@@ -71,10 +71,3 @@ class TestObjectBrowser(unittest.TestCase):
         self.loadPage('/objectbrowser/add/command', 200)
         self.loadPage('/objectbrowser/add/template', 200)
 
-    def loadPage(self, url, expected_code=200):
-        """ Load one specific page, and assert if return code is not 200 """
-        c = Client()
-        rsp = c.get(url)
-        self.assertEqual(rsp.status_code, expected_code,
-                         "Expected status code {expected_code} for page {url}, "
-                         "but got {rsp.status_code}".format(**locals()))
