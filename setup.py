@@ -31,23 +31,27 @@ version = __version__
 def get_filelist(path):
     """Returns a list of all files in a given directory"""
     files = []
-    directories_to_check = [path]
+    curdir = os.getcwd()
+    os.chdir(path)
+    directories_to_check = ['.']
     while len(directories_to_check) > 0:
         current_directory = directories_to_check.pop(0)
         for i in os.listdir(current_directory):
             if i == '.gitignore':
                 continue
-            relative_path = current_directory + "/" + i
+            relative_path = (os.path.join(current_directory, i)
+                              if current_directory != '.'
+                              else i)
             if os.path.isfile(relative_path):
                 files.append(relative_path)
             elif os.path.isdir(relative_path):
                 directories_to_check.append(relative_path)
             else:
-                print "what am i?", i
+                print("Unhandled file type: %s" % relative_path)
+    os.chdir(curdir)
     return files
 
-template_files = get_filelist('adagios')
-data_files = map(lambda x: x.replace('adagios/', '', 1), template_files)
+data_files = get_filelist('adagios')
 
 
 class adagios_build(build):
