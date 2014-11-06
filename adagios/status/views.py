@@ -51,6 +51,7 @@ import adagios.businessprocess
 from adagios import userdata
 from django.core.urlresolvers import reverse
 from adagios.status import graphite
+from adagios.status import rekishi
 
 state = defaultdict(lambda: "unknown")
 state[0] = "ok"
@@ -331,13 +332,14 @@ def service_detail(request, host_name, service_description):
         c['errors'].append(e)
 
     # Lets get some graphs
-    try:
-        tmp = run_pnp("json", host=host_name)
-        tmp = json.loads(tmp)
-    except Exception, e:
-        tmp = []
-        c['pnp4nagios_error'] = e
-    c['graph_urls'] = tmp
+    if adagios.settings.enable_pnp4nagios:
+        try:
+            tmp = run_pnp("json", host=host_name)
+            tmp = json.loads(tmp)
+        except Exception, e:
+            tmp = []
+            c['pnp4nagios_error'] = e
+        c['graph_urls'] = tmp
     
     if adagios.settings.enable_graphite:
         metrics = [x.label for x in perfdata.metrics]
@@ -355,6 +357,16 @@ def service_detail(request, host_name, service_description):
                 for k,v in graph['metrics'].items():
                     default[k] = v
                 c['graphite_default'] = default
+
+    if adagios.settings.enable_rekishi:
+        metrics = [x.label for x in perfdata.metrics]
+        service = c['service_description'].replace(' ', '_')
+        c['rekishi'] = rekishi.get(adagios.settings.rekishi_url,
+                                   c['host_name'],
+                                   service,
+                                   metrics,
+                                   adagios.settings.REKISHI_PERIODS,
+                                   )
     
     return render_to_response('status_detail.html', c, context_instance=RequestContext(request))
 

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load url from future %}
 {% load i18n %}
 
 {% block title %}Objectbrowser{% endblock %}
@@ -12,17 +13,6 @@
                     <div class="block" id="page_header">
                         <!-- block page_header starts -->
                         {% block page_header %}
-                            <ul class="breadcrumb">
-                                <li>
-                                    <a href="{% url "home" %}">{% trans "Home" %}</a> <span class="divider">/</span>
-                                </li>
-                                <li>
-                                    {% block nav1 %}
-                                        <a href="{% url "objectbrowser" %}">objectbrowser</a>
-                                    {% endblock %}
-                                    <span class="divider">/</span>
-                                </li>
-                            </ul>
                             <h2>
                                 <i class="icon-th-large"></i> <small>{% block smallheader %}block=smallheader{% endblock%} </small> {% block largeheader %}block=largeheader{% endblock %}
                             </h2>
@@ -80,11 +70,11 @@
 
                                     {% if my_object %}
                                         <li><a data-toggle="modal" href="#geek_edit"><i class="icon-pencil"></i> {% trans "Geek Edit" %}</a></li>
-                                        <li><a href="{%  url "objectbrowser.views.copy_object" my_object.id %}"><i class="icon-copy"></i>
+                                        <li><a href="{% url "objectbrowser.views.copy_object" my_object.id %}"><i class="icon-copy"></i>
 					    {% blocktrans with type=my_object.object_type %}
 					    Copy this {{ type }}
 					    {% endblocktrans %}</a></li>
-                                        <li><a href="{%  url "objectbrowser.views.delete_object" my_object.id %}"><i class="icon-trash"></i>
+                                        <li><a href="{% url "objectbrowser.views.delete_object" my_object.id %}"><i class="icon-trash"></i>
 					    {% blocktrans with type=my_object.object_type %}Delete this {{  type }}
 					    {% endblocktrans %}</a></li>
                                     {% endif %}
@@ -102,7 +92,7 @@
                                                 <i class="glyph-table"></i> {% trans "Show Status information" %}</a>
                                         </li>
                                         <li>
-                                            <a href="{%  url "objectbrowser.views.add_object" "service" %}?host_name={{ my_object.host_name }}">
+                                            <a href="{% url "objectbrowser.views.add_object" 'service' %}?host_name={{ my_object.host_name }}">
                                                 <i class="icon-edit"></i> {% trans "Add Service Checks" %}
                                             </a>
                                         </li>

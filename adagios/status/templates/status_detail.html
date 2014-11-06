@@ -1,5 +1,7 @@
 {% extends "base_status.html" %}
+{% load url from future %}
 {% load adagiostags %}
+{% load static %}
 {% load i18n %}
 {% load staticfiles %}
 
@@ -16,11 +18,11 @@
     {% trans "host" %}
 
     <div class="circle host state_{{ host.state }}"></div>
-    <a href="{% url "status.views.detail" %}?host_name={{ host.name }}">
+    <a href="{% url 'status.views.detail' %}?host_name={{ host.name }}">
         <small>{{ host.display_name }}</small>
     </a>
 {% endblock %}
-{% block nav1 %}<a href="{% url "status.views.services" %}">{% trans "status" %}</a>{% endblock %}
+{% block nav1 %}<a href="{% url 'status.views.services' %}">{% trans "status" %}</a>{% endblock %}
 {% block nav2 %}{{ host_name }} {% if primary_object.object_type == 'service' %}- {{ service_description }}{% endif %}{% endblock %}
 
 
@@ -33,9 +35,14 @@
             <li><a href="#general" data-toggle="tab">{% trans "General" %}</a></li>
             <li><a href="#information" data-toggle="tab">{% trans "Information" %}</a></li>
             <li><a href="#events" data-toggle="tab" id="history_link">{% trans "History" %}</a></li>
+            {% if settings.enable_pnp4nagios %}
             <li><a href="#graphs" data-toggle="tab" id="graphs_link">{% trans "Graphs" %}</a></li>
+            {% endif %}
             {% if settings.enable_graphite %}
               <li><a href="#graphite" data-toggle="tab" id="graphite_link">{% trans "Graphite" %}</a></li>
+            {% endif %}
+            {% if settings.enable_rekishi %}
+              <li id="rekishi_tab"><a href="#rekishi" data-toggle="tab" id="rekishi_link">{% trans "Graphs" %}</a></li>
             {% endif %}
             <li><a href="#custom_variables" data-toggle="tab">{% trans "Custom Variables" %}</a></li>
             <li><a href="#other" data-toggle="tab">{% trans "Debug" %}</a></li>
@@ -62,7 +69,7 @@
                 </tr>
                 <tr >
                     <td class="hidden-phone" >{% trans "Host Name" %}</td>
-                    <td><a href="{% url "status.views.detail" %}?host_name={{ host.name  }}" title="{{ host.plugin_output }}">
+                    <td><a href="{% url 'status.views.detail' %}?host_name={{ host.name  }}" title="{{ host.plugin_output }}">
                         {% if my_object.last_check != 0 %}
                         <div class="circle host state_{{ host.state }}"></div>
                         {% else %}
@@ -116,9 +123,14 @@
                                     <th>{% trans "unit" %}</th>
                                     <th>{% trans "min" %}</th>
                                     <th>{% trans "max" %}</th>
+                                    {% if settings.enable_pnp4nagios %}
                                     <th>{% trans "pnp" %}</th>
+                                    {% endif %}
                                     {% if settings.enable_graphite %}
                                       <th>{% trans "graphite" %}</th>
+                                    {% endif %}
+                                    {% if settings.enable_rekishi %}
+                                      <th>{% trans "Graphs" %}</th>
                                     {% endif %}
                                 </tr>
                                 {% for i in perfdata %}
@@ -131,11 +143,27 @@
                                         <td> {{ i.uom }}</td>
                                         <td>{{ i.min }}   </td>
                                         <td>{{ i.max }}   </td>
+                                        {% if settings.enable_pnp4nagios %}
                                         <td>
-                                            <a href="{% url "pnp.views.pnp" %}/image?host={{ host.name }}&source={{ i.i }}&srv={{ service_description }}" class="preview" title="{{ service_description }} {{ i.label }}"><i class="glyph glyph-charts"></i></a>
+                                            <a href="{% url 'pnp.views.pnp' %}/image?host={{ host.name }}&source={{ i.i }}&srv={{ service_description }}" class="preview pnp" title="{{ service_description }} {{ i.label }}"><i class="glyph glyph-charts"></i></a>
                                         </td>
+                                        {% endif %}
                                         {% if settings.enable_graphite %}
-                                          <td><a href="{{ graphite_default|hash:i.label }}" class="preview" title="{{ service_description }} {{ i.label }}"><i class="glyph glyph-charts"></i></a></td>
+                                            <td>
+                                                <a href="{{ graphite_default|hash:i.label }}" class="preview graphite" title="{{ service_description }} {{ i.label }}">
+                                                    <i class="glyph glyph-charts"></i>
+                                                </a>
+                                            </td>
+                                        {% endif %}
+                                        {% if settings.enable_rekishi %} 
+                                            <td>
+                                                <a href="#" graph="{{ i.label }}" id="pre_{{ i.label }}" class="preview rekishi" title="{{ service_description }} {{ i.label }}">
+                                                    <i class="glyph glyph-charts" id="rekishi-preview-{{ i.label }}"></i>
+                                                </a>
+                                                <div id="rekishi-pre_graph-container_{{ i.label }}">
+                                                    <div id="pre_graph_{{ i.label }}" style="max-height: 200px; max-width: 480px;" ></div>
+                                                </div>
+                                            </td>
                                         {% endif %}
                                     </tr>
                                 {% endfor %}
@@ -187,14 +215,14 @@
         <div class="tab-pane" id="information">
             <p>
               {% blocktrans with ot=my_object.object_type ci=my_object.check_interval %}
-	      This {{ ot }} is checked every <a href="#">{{ ci }}</a> minutes.
-	      {% endblocktrans %}
-	      
-	      {% blocktrans with mca=my_object.max_check_attempts ri=my_object.retry_interval %}
+              This {{ ot }} is checked every <a href="#">{{ ci }}</a> minutes.
+              {% endblocktrans %}
+              
+              {% blocktrans with mca=my_object.max_check_attempts ri=my_object.retry_interval %}
               When a problem occurs it will be checked <a href="#">{{ mca }}</a> times
               every <a href="#">{{ ri }}</a> minutes before going to
               hard state and start sending out notifications.
-	      {% endblocktrans %}
+              {% endblocktrans %}
             </p>
 
             {% if my_object.notes %}
@@ -230,12 +258,12 @@
                     <td>{% trans "Check Period" %}</td>
                     <td>
                         {% if my_object.check_period %}
-                        <a href="{% url "adagios.objectbrowser.views.edit_object" %}?object_type=timeperiod&timeperiod_name={{ my_object.check_period }}">{{ my_object.check_period }}</a>
+                        <a href="{% url 'adagios.objectbrowser.views.edit_object' %}?object_type=timeperiod&timeperiod_name={{ my_object.check_period }}">{{ my_object.check_period }}</a>
                         {% else %}
                         {% trans "Unknown" %}
                         {% endif %}
                         <span class="pull-right">
-			    (currently {% if my_object.in_check_period %}inside{% else %}outside{% endif %} check_period)
+                            (currently {% if my_object.in_check_period %}inside{% else %}outside{% endif %} check_period)
                         </span>
                     </td>
                 </tr>
@@ -243,7 +271,7 @@
                     <td>{% trans "Notification Period" %}</td>
                     <td>
                         {% if my_object.notification_period %}
-                        <a href="{% url "adagios.objectbrowser.views.edit_object" %}?object_type=timeperiod&timeperiod_name={{ my_object.notification_period }}">{{ my_object.notification_period }}</a>
+                        <a href="{% url 'adagios.objectbrowser.views.edit_object' %}?object_type=timeperiod&timeperiod_name={{ my_object.notification_period }}">{{ my_object.notification_period }}</a>
                         {% else %}
                         {% trans "Unknown" %}
                         {% endif %}
@@ -334,9 +362,9 @@
                                 {% for i in my_object.downtimes_with_info %}
                                     <div class="alert alert-info">
                                         <button class="close delete_downtime" data-dismiss="alert" title="{% trans "Delete Downtime" %} {{ i.0 }}"
-                                                onclick="$.getJSON('{% url "rest/status" %}json/delete_downtime?downtime_id={{ i.0 }}{% if object_type == 'host' %}&is_service=False{% endif %}');">
+                                                onclick="$.getJSON('{% url 'home' %}rest/status/json/delete_downtime?downtime_id={{ i.0 }}{% if object_type == 'host' %}&is_service=False{% endif %}');">
                                             <i class="glyph-bin"></i></button>
-                                        <i class="glyph-user"></i> <a href="{% url "status.views.detail" %}?contact_name={{ i.1 }}">{{ i.1 }}</a>: {{ i.2 }}
+                                        <i class="glyph-user"></i> <a href="{% url 'status.views.detail' %}?contact_name={{ i.1 }}">{{ i.1 }}</a>: {{ i.2 }}
                                     </div>
                                 {% endfor %}
                             </div>
@@ -355,9 +383,9 @@
                             {% if my_object.comments_with_info %}
                                 {% for i in my_object.comments_with_info %}
                                     <div class="alert alert-info">
-                                        <button class="close delete_comment" data-dismiss="alert" title="Delete comment {{ i.0 }}" onclick="$.getJSON('{% url "rest/status" %}json/delete_comment?host_name={{ host_name }}&service_description={{ service_description }}&comment_id={{ i.0 }}');">
+                                        <button class="close delete_comment" data-dismiss="alert" title="Delete comment {{ i.0 }}" onclick="$.getJSON('{% url 'home' %}rest/status/json/delete_comment?host_name={{ host_name }}&service_description={{ service_description }}&comment_id={{ i.0 }}');">
                                             <i class="glyph-bin"></i></button>
-                                        <i class="glyph-user"></i> <a href="{% url "status.views.detail" %}?contact_name={{ i.1 }}">{{ i.1 }}</a>: {{ i.2 }}
+                                        <i class="glyph-user"></i> <a href="{% url 'status.views.detail' %}?contact_name={{ i.1 }}">{{ i.1 }}</a>: {{ i.2 }}
                                     </div>
                                 {% endfor %}
                             {% else %}
@@ -387,7 +415,7 @@
                                         {% for parent in parent_level %}
                                             <td>
                                                 <div class="alert host state_{{ parent.state }}">
-                                                    <a href="{% url "status.views.detail" %}?host_name={{ parent.name }}">{{ parent.name }}</a>
+                                                    <a href="{% url 'status.views.detail' %}?host_name={{ parent.name }}">{{ parent.name }}</a>
                                                 </div>
                                             </td>
                                         {% endfor %}
@@ -434,7 +462,7 @@
             {% endif %}
             <p></p>
             {% if my_object.host_custom_variables %}
-                Host <a href="{% url "status.views.detail" %}?host_name={{ host_name }}#tab_custom_variables">{{ host_name }}</a> also has some custom variables.
+                Host <a href="{% url 'status.views.detail' %}?host_name={{ host_name }}#tab_custom_variables">{{ host_name }}</a> also has some custom variables.
                 <table class="table table-condensed">
                     <tr>
                         <th>
@@ -453,7 +481,7 @@
                 </table>
             {% else %}
             {% endif %}
-            See also <a href="{% url "adagios.objectbrowser.views.edit_object" %}?object_type={{ object_type }}&host_name={{ host_name }}{% if object_type == "service" %}&service_description={{ service_description }}{% endif %}#monitoring_tab">{% trans "Configure check command" %}</a>
+            See also <a href="{% url 'adagios.objectbrowser.views.edit_object' %}?object_type={{ object_type }}&host_name={{ host_name }}{% if object_type == "service" %}&service_description={{ service_description }}{% endif %}#monitoring_tab">{% trans "Configure check command" %}</a>
 
 
         </div>
@@ -462,6 +490,7 @@
         </div>
 
 
+        {% if settings.enable_pnp4nagios %}
         <div class="tab-pane" id="graphs">
                 {% if graph_urls %}
                     <div id="graphs2" class="tabbable"> <!-- Only required for left/right tabs -->
@@ -505,14 +534,15 @@
                         {% trans "Please check that:" %}
                         <ul>
                         <li><a href="{{ pnp_url }}">pnp4nagios</a>{% trans " is installed and working" %}</li>
-                        <li><i>{% trans "PNP Filepath" %}</i>{% trans " is correctly configured under " %}<a href="{% url "misc.views.settings" %}">{% trans "settings" %}</a></li>
+                        <li><i>{% trans "PNP Filepath" %}</i>{% trans " is correctly configured under " %}<a href="{% url 'misc.views.settings' %}">{% trans "settings" %}</a></li>
                         <li>{% trans "User running nagios is a member of the unix groups apache or www-data" %}</li>
-                        <li>{% url "pnp.views.pnp" "json" as the_url %} {% blocktrans %}Click <a href="{{ the_url }}">here</a> to see pnp4nagios output{% endblocktrans %}</li>
+                        <li>{% url 'pnp.views.pnp' "json" as the_url %} {% blocktrans %}Click <a href="{{ the_url }}">here</a> to see pnp4nagios output{% endblocktrans %}</li>
                         </ul>
                     {% endif %}
                     {% blocktrans with ot=my_object.object_type %}No Performance data is available for this {{ ot }}.{% endblocktrans %}
                 {% endif %}
         </div>
+        {% endif %}
         {% if settings.enable_graphite %}
         <div class="tab-pane" id="graphite">
           <div id="graphite" class="tabbable"> <!-- Only required for left/right tabs -->
@@ -536,6 +566,40 @@
         </div>
         {% endif %}
         
+        {% if settings.enable_rekishi %}
+        <div class="tab-pane" id="rekishi">
+          <div id="rekishi" class="tabbable"> <!-- Only required for left/right tabs -->
+            <div class="row">
+              <div class="span1"></div>
+              <div class="span11">
+                <ul class="nav nav-pills" id="rekishi_ul">
+                  {% for period in rekishi.periods %}
+                    <li{% if period.css_id == settings.REKISHI_DEFAULT_TAB %} class="active"{% endif %}><a href="#" id="rekishi_{{ period.css_id }}" range="{{ period.period_sec }}">{% trans period.name %}</a>
+                  {% endfor %}
+                </ul>
+                <input type="checkbox" id="rekishiEvents"> {% trans "Show events" %}</input>
+              </div>
+            </div>
+
+              {% for graph in rekishi.graphs %}
+                <div class="tab-pane{% if graph.css_id == settings.REKISHI_DEFAULT_TAB %} active{% endif %}" id="rekishi_{{ graph.css_id }}">
+                  {% for k,v in graph.items %}
+                <hr/>
+                  <div class="row">
+                    <div class="rekishi-graph-container span9" style="position: relative; height: 320px;">
+                      <div id="graph_{{ k }}" style="position: absolute; left: 10px; right: 10px; top: 40px; bottom: 10px;"></div>
+                    </div>
+                    <div class="span3">
+                    <div id="{{ k }}_legend"></div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        
         </div>
       </div>
 
@@ -546,7 +610,7 @@
         <ul class="nav nav-list">
             {% for i in host.services_with_info %}
                 <li >
-                    <a title="{{ i.3 }}" href="{% url "status.views.detail" %}?host_name={{ host.name  }}&service_description={{ i.0 }}">
+                    <a title="{{ i.3 }}" href="{% url 'status.views.detail' %}?host_name={{ host.name  }}&service_description={{ i.0 }}">
                         <div class="circle state_pending"></div> {{ i.0 }}
                     </a>
                 </li>
@@ -579,7 +643,7 @@
             <h5>{% trans "Is a member of hostgroup:" %}</h5>
             <ul class="nav nav-list">
                 {% for group in hostgroups %}
-                    <li><a target="_blank" href="{% url "status.views.detail" %}?hostgroup_name={{ group.name }}">{{ group.name }}</a></li>
+                    <li><a target="_blank" href="{% url 'status.views.detail' %}?hostgroup_name={{ group.name }}">{{ group.name }}</a></li>
                 {% endfor %}
             </ul>
         {% endif %}
@@ -589,7 +653,7 @@
         <ul class="nav nav-list">
             {% for i in host.parents %}
                 <li>
-                    <a href="{% url "status.views.detail" %}?host_name={{ i }}">
+                    <a href="{% url 'status.views.detail' %}?host_name={{ i }}">
                         {{ i }}
                     </a>
                 </li>
@@ -601,7 +665,7 @@
         <h5>{% trans "Is a member of hostgroups" %}</h5>
         <ul class="nav nav-list">
             {% for group in host.groups %}
-                <li><a href="{% url "status.views.detail" %}?hostgroup_name={{ group  }}">{{ group }}</a></li>
+                <li><a href="{% url 'status.views.detail' %}?hostgroup_name={{ group  }}">{{ group }}</a></li>
             {% endfor %}
         </ul>
     {% endif %}
@@ -610,7 +674,7 @@
         <h5>{% trans "Is a member of contactgroups" %}</h5>
         <ul class="nav nav-list">
             {% for group in my_object.contact_groups %}
-                <li><a href="{% url "adagios.status.views.detail" %}?contactgroup_name={{ group }}">{{ group }}</a></li>
+                <li><a href="{% url 'adagios.status.views.detail' %}?contactgroup_name={{ group }}">{{ group }}</a></li>
             {% endfor %}
         </ul>
     {% endif %}
@@ -619,7 +683,7 @@
         <h5>{% trans "Is a member of servicegroups" %}</h5>
         <ul class="nav nav-list">
             {% for group in service.groups %}
-                <li><a href="{% url "adagios.status.views.detail" %}?servicegroup_name={{ group }}">{{ group }}</a></li>
+                <li><a href="{% url 'adagios.status.views.detail' %}?servicegroup_name={{ group }}">{{ group }}</a></li>
             {% endfor %}
         </ul>
     {% endif %}
@@ -690,7 +754,6 @@
                     })
                     .fail( function(data) {
                         $('#effective_check_command').text(gettext("Failed to load check_command."));
-                        console.log(data);
                     });
 
             {% if not settings.escape_html_tags %}
@@ -724,16 +787,16 @@
 
                     if (my_element.childElementCount == 0) {
                         var spinner = document.createElement( 'img');
-                        spinner.setAttribute("src", "{% static "external/select2/spinner.gif" %}");
+                        spinner.setAttribute("src", "{% url "media" path="external/select2/spinner.gif" %}");
                         my_element.appendChild( spinner );
-                        var url = '{% url "pnp.views.pnp" 'json' %}?host={{ host_name }}&srv={{ service_description }}';
+                        var url = '{% url 'pnp.views.pnp' 'json' %}?host={{ host_name }}&srv={{ service_description }}';
                         $.getJSON(url)
                                 .done( function(data) {
                                     var new_img;
                                     $.each(data, function(i, item) {
                                         if (item['title'] == title) {
                                             new_img = document.createElement( 'img');
-                                            new_img.setAttribute("src", "{% url "pnp.views.pnp" 'image' %}?" + item['image_url']);
+                                            new_img.setAttribute("src", "{% url 'pnp.views.pnp' 'image' %}?" + item['image_url']);
                                             my_element.appendChild( new_img );
                                             }
                                         }
@@ -795,7 +858,7 @@
         });
 
         // Perfomance Graph Preview on hover
-        $("a.preview").popover({
+        $("a.preview.pnp").popover({
             placement: 'top',
             trigger: 'hover',
             template: '<div class="popover"><div class="arrow"></div><div class="popover-inner" style="width: 600px"><h3 class="popover-title"></h3><div class="popover-content" style="min-height: 200px"><p></p></div></div></div>',
@@ -803,6 +866,291 @@
                 return "<img src='"+ $(this)[0].href +"' alt='{% trans "Image preview" %}' />";
             }
         });
+
+        $("a.preview.graphite").popover({
+            placement: 'top',
+            trigger: 'hover',
+            template: '<div class="popover"><div class="arrow"></div><div class="popover-inner" style="width: 600px"><h3 class="popover-title"></h3><div class="popover-content" style="min-height: 200px"><p></p></div></div></div>',
+            content: function() {
+                return "<img src='"+ $(this)[0].href +"' alt='{% trans "Image preview" %}' />";
+            }
+        });
+
+
+        {% if settings.enable_rekishi %}
+            // Handle reload on graphs tab
+            $( document ).ready( function() {
+                if ($("ul#objecttab > li").hasClass("active")) {
+                    draw_graph();
+                }
+            });
+
+            // Handle click on graph tab
+            $("li#rekishi_tab").click( function(){
+                draw_graph();
+            });
+
+            // Prepare variables
+            allDygraphs = [];
+            var blockRedraw = false;
+
+            // Graphs function
+            function draw_graph(){
+                // Get default time window
+                var now = new Date().getTime();
+                var time_range = [now + parseInt($("ul#rekishi_ul > li.active > a").attr("range")) * 1000, now];
+
+            {% for graph in rekishi.graphs %}
+                {% for k,v in graph.items %}
+                    $.get("{{ v }}", function(data){
+
+                        {# Find the units in the returned data so we can use them in axis title #}
+                        var unitsIndex = 0;
+                        for(var i=0; i<data[0].labels.length; i++){
+                            if(data[0].labels[i] == "unit"){
+                                unitsIndex = i;
+                            }
+                        }
+
+                        {# Fix the timestamps to JS dates #}
+                        for(var i=0; i<data[0].data.length; i++){
+                            data[0].data[i][0] = new Date(parseInt(data[0].data[i][0]) * 1000);
+                        }
+
+                        // Get indexes of datas
+                        var critical_i = data[0].labels.indexOf("critical");
+                        var warning_i = data[0].labels.indexOf("warning");
+                        var min_i = data[0].labels.indexOf("min");
+                        var max_i = data[0].labels.indexOf("max");
+                        var value_i = data[0].labels.indexOf("value");
+                        var time_i = data[0].labels.indexOf("time");
+                        var unit_i = data[0].labels.indexOf("unit");
+                        // Set datas
+                        graph_data = new Array();
+                        $(data[0].data).each( function() {
+                            d = new Array();
+                            d[0] = $(this)[time_i];
+                            d[1] = $(this)[value_i];
+                            d[2] = $(this)[warning_i];
+                            d[3] = $(this)[critical_i];
+                            graph_data.push(d);
+                        });
+                        // Set graph labels
+                        graph_labels = new Array();
+                        graph_labels[0] = "time";
+                        graph_labels[1] = "{{ k }}";
+                        graph_labels[2] = "warning";
+                        graph_labels[3] = "critical";
+                        // Set title
+                        var title = "{{ k }}";
+                        var unit = data[0].data[0][unit_i];
+                        if ( unit ) {
+                            title = title + " (" + unit + ")";
+                        }
+                        // set min and max
+                        var max = 0;
+                        var min = 0;
+                        $(data[0].data).each( function() {
+                            if ( min > $(this)[min_i] ){
+                                min = $(this)[min_i]
+                            }
+                            if ( min > $(this)[value_i] ){
+                                min = $(this)[value_i]
+                            }
+                            if ( min > $(this)[warning_i] ){
+                                min = $(this)[warning_i]
+                            }
+                            if ( min > $(this)[critical_i] ){
+                                min = $(this)[critical_i]
+                            }
+                            if ( max < $(this)[max_i] ){
+                                max = $(this)[max_i]
+                            }
+                            if ( max < $(this)[value_i] ){
+                                max = $(this)[value_i]
+                            }
+                            if ( max < $(this)[warning_i] ){
+                                max = $(this)[warning_i]
+                            }
+                            if ( max < $(this)[critical_i] ){
+                                max = $(this)[critical_i]
+                            }
+                        });
+                        // Build pre_graph
+                        pre_dg = new Dygraph(
+                            $("#pre_graph_{{ k }}")[0],
+                            graph_data,
+                            {
+                                labels: graph_labels,
+                                title: title,
+                                colors: ['#489CDF', '#FFDE00', 'red'],
+                                strokeWidth: 2,
+                                {{ k }}: {fillGraph: true},
+                                labelsKMG2: true,
+                                legend: 'never',
+                                showLabelsOnHighlight: false,
+                                ylabel: data[0].data[0][unitsIndex],
+//                                valueRange: [min, max],
+//                                yRangePad: 20,
+                                dateWindow: time_range
+                            }
+                        );
+                        // Build graph
+                        if ($("li#rekishi_tab").hasClass("active")) {
+                          dg = new Dygraph(
+                            $("#graph_{{ k }}")[0],
+                            graph_data,
+                            { 
+                                labels: graph_labels,
+                                animatedZooms: true,
+                                title: title,
+                                colors: ['#489CDF', '#FFDE00', 'red'],
+                                strokeWidth: 2,
+                                {{ k }}: {fillGraph: true},
+                                labelsKMG2: true,
+                                labelsSeparateLines: true,
+                                legend: 'always',
+                                highlightCircleSize: 5,
+                                //drawPoints: true,
+                                labelsDiv: document.getElementById('{{ k }}_legend'),
+//                                showRangeSelector: true,
+//                                rangeSelectorHeight: 30,
+//                                rangeSelectorPlotStrokeColor: '#808FAB',
+//                                rangeSelectorPlotFillColor: '#A7B1C4',
+                                ylabel: data[0].data[0][unitsIndex],
+                                dateWindow: time_range,
+                                valueRange: [min, max],
+                                yRangePad: 20,
+                                // Handle synced graphs zoom
+                                drawCallback: function(me, initial) {
+                                                if (blockRedraw || initial) return;
+                                                blockRedraw = true;
+                                                var range = me.xAxisRange();
+                                                $( allDygraphs ).each( function(){
+                                                    if (this != me) {
+                                                    this.updateOptions({
+                                                        dateWindow: range
+                                                      });
+                                                    }
+                                                });
+                                                blockRedraw = false;
+                                              }
+                            }
+                          );
+                          allDygraphs.push(dg);
+                        }
+                    });
+                $("a#pre_{{ k }}").popover('show').popover('hide')
+                {% endfor %}
+            {% endfor %}
+            }
+
+           {% for graph in rekishi.graphs %}
+              {% for k,v in graph.items %}
+                $("a#pre_{{ k }}").popover({
+                    placement: 'top',
+                    trigger: 'hover',
+                    template: '<div class="popover"><div class="arrow"></div><div class="popover-inner" style="width: 530px"><h3 class="popover-title"></h3><div class="popover-content" style="min-height: 200px"><p></p></div></div></div>',
+                    content: $("#rekishi-pre_graph-container_{{ k }}")
+                });
+              {% endfor %}
+            {% endfor %}
+
+
+            $("input#rekishiEvents").change( function() {
+                if($(this).prop('checked') == true){
+                    $.get("{{ rekishi.events_url }}", function(data){
+                        // Get labels
+                        labels = data[0].labels;
+                        time_i = labels.indexOf("time");
+                        state_i = labels.indexOf("state");
+                        output_i = labels.indexOf("output");
+                        events = data[0].data;
+                        annotations = [];
+                        // Fix time
+                        for(var i=0; i<data[0].data.length; i++){
+                            events[i][0] = new Date(parseInt(events[i][0]) * 1000).getTime();
+                        }
+                        // Annotations
+                        $( allDygraphs ).each(function(){
+                            var value_name = this.getLabels()[1];
+                            for(var i=0; i<events.length; i++){
+                                // Prepare annotations
+                                if ( events[i][time_i] != null &&
+                                     events[i][state_i] != null &&
+                                     events[i][output_i] != null )
+                                    {
+                                    ann = {
+                                        series : value_name,
+                                        x : events[i][time_i], // Timestamp
+                                        shortText: events[i][state_i][0],
+                                        text: events[i][output_i],
+                                    };
+                                    annotations.push(ann);
+                                }
+                            }
+                            // Add annotations
+                            this.setAnnotations(annotations);
+                        });
+                    });
+                } else {
+                    $( allDygraphs ).each(function(){
+                        this.setAnnotations({});
+                    });
+                }
+            });
+
+            var desired_range = null;
+            function approach_range() {
+                if (!desired_range) return;
+                $( allDygraphs ).each(function(){
+                    // go halfway there
+                    var range = this.xAxisRange();
+                    if (Math.abs(desired_range[0] - range[0]) < 60 &&
+                        Math.abs(desired_range[1] - range[1]) < 60) {
+                      this.updateOptions({dateWindow: desired_range});
+                      // (do not set another timeout.)
+                    } else {
+                      var new_range;
+                      new_range = [0.5 * (desired_range[0] + range[0]),
+                                   0.5 * (desired_range[1] + range[1])];
+                      this.updateOptions({dateWindow: new_range});
+                      animate();
+                    }
+                });
+            }
+
+            function animate() {
+                setTimeout(approach_range, 50);
+            }
+
+            function zoom(time_range) {
+                $( allDygraphs ).each(function(){
+                    this.updateOptions({dateWindow: time_range});
+                    // We disable zoom animation cause FF 31 is really slow with
+                    //desired_range = time_range;
+                    //animate();
+                });
+            }
+
+            {# Handle rekishi zoom #}
+            {% for period in rekishi.periods %}
+                $("a#rekishi_{{ period.css_id }}").click( function() {
+                    // Get range
+                    var now = new Date().getTime();
+                    var time_range = [now + parseInt($(this).attr("range")) * 1000, now];
+                    // Set button classes
+                    $("ul#rekishi_ul li").removeClass("active");
+                    $(this).parent().addClass("active");
+                    // Zoom
+                    zoom(time_range);
+                    // Disable link
+                    return false;
+                });
+            {% endfor %}
+
+
+        {% endif %}
     </script>
 
 {% endblock %}
