@@ -29,6 +29,7 @@ def add_plugin(name="myplugin", modulepath=None):
     """ Adds a new django application dynamically to adagios.
 
     """
+
     if name in active_plugins:
         return None
     if not modulepath:
@@ -40,16 +41,6 @@ def add_plugin(name="myplugin", modulepath=None):
 
     active_plugins[name] = modulepath
 
-    # Add plugin to INSTALLED_APPLICATIONS
-    #import adagios.settings
-    #adagios.settings.INSTALLED_APPS.append(modulepath)
-    # Add plugin to urls
-    import adagios.urls
-    from django.conf.urls import patterns, include
-    new_pattern = patterns('',
-        (r'^%s'%name, include("%s.urls" % modulepath) ),
-    )
-    adagios.urls.urlpatterns += new_pattern
     # if plugin has menubar items, find them and list them
     if os.path.isfile(template_dir + "%s_menubar_misc.html" %name):
         misc_menubar_items.append( "%s_menubar_misc.html" % name)
