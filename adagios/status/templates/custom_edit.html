@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% load adagiostags %}
+{% comment %}
 {% load staticfiles %}
+{% endcomment %}
 
 {% block title %}{% if viewname %}{% trans "Edit view" %}: {{ viewname }}{% else %}New view{% endif %}{% endblock %}
 {% block smallheader %}{% endblock %}
