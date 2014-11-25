@@ -46,6 +46,18 @@ urlpatterns = patterns(
     url(r'^jsi18n/$', 'django.views.i18n.javascript_catalog'),
 )
 
+
+
+# this *was* actually handled in adagios/__init__.py by the add_plugin() function.
+# I really think this is better to handle it at this level,
+# already because it's quite bad to modify the settings from the package top level.
+for name, mod_path in settings.plugins.items():
+    urlpatterns +=  patterns('',
+        (r'^%s/' % name, include("%s.urls" % mod_path) ),
+    )
+
+
+
 if settings.DEBUG:
     urlpatterns += patterns('',
         url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT}, name="media"),
