@@ -197,8 +197,16 @@ def snippets_log(request):
     if service_description == "_HOST_":
         service_description = None
 
-    l = pynag.Parsers.LogFiles(maincfg=adagios.settings.nagios_config)
-    log = l.get_state_history(host_name=host_name, service_description=service_description)
+    if adagios.settings.enable_rekishi:
+        if service_description is None:
+            service_description = '_self_'
+        base_kw = OrderedDict()
+        base_kw['host'] = host_name
+        base_kw['service'] = service_description
+        log = rekishi.get_logs2(base_kw, {'start': 'now()-168h'}, get_events=True)
+    else:
+        l = pynag.Parsers.LogFiles(maincfg=adagios.settings.nagios_config)
+        log = l.get_state_history(host_name=host_name, service_description=service_description)
 
     # If hostgroup_name was specified, lets get all log entries that belong to that hostgroup
     if host_name and service_description:
