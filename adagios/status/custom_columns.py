@@ -32,6 +32,9 @@ thus forcing us to post-process the data.
 
 import os
 import json
+import logging
+
+logger = logging.getLogger('adagios.status')
 
 from adagios.status import utils
 
@@ -46,16 +49,17 @@ def get_data():
     # we try every backend until one works properly
     # otherwise columns appear multiple times, coming from multiple backends
     # this is faster than using set() afterwards
-    res = None
+    errors = []
     for backend in backends:
         try:
             res = livestatus.query(query, backend=backend)
-            break
-        except:
-            continue
-    if not res:
-        raise Exception('No working backend found.')
-    return res
+            if res:
+                return res
+            raise Exception('returned data for %s is falsy: %r' % (query, res))
+        except Exception as err:
+            msg = '%r: %s' % (backend, err)
+            errors.append(msg)
+    raise Exception('No working backend found.\n' + '\n'.join(errors))
 
 def process_data(data):
     """
