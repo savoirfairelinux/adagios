@@ -21,7 +21,7 @@ from __future__ import absolute_import
 
 import time
 from os.path import dirname
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import json
 import traceback
 
@@ -920,8 +920,8 @@ def _status_log(request):
     c['errors'] = []
     start_time = request.GET.get('start_time', '')
     end_time = request.GET.get('end_time', '')
-    host_name = request.GET.get('host_name', '')
-    service_description = request.GET.get('service_description', '')
+    host_name = request.GET.get('host_name', None)
+    service_description = request.GET.get('service_description', None)
     limit = request.GET.get('limit', '')
 
     if end_time == '':
@@ -957,16 +957,29 @@ def _status_log(request):
         k = str(k)
         v = str(v)
         kwargs[k] = v
-    l = pynag.Parsers.LogFiles(maincfg=adagios.settings.nagios_config)
-    c['log'] = l.get_log_entries(
-        start_time=start_time, end_time=end_time, **kwargs)[-limit:]
-    c['log'].reverse()
-    c['logs'] = {'all': []}
+
+    if adagios.settings.enable_rekishi:
+        search = kwargs.get('search', '')
+        search = '.*%s.*' % search if search else '.*'
+        base_kw = OrderedDict()
+        base_kw['host_or_service'] = search
+        query_kw = {}
+        query_kw['start'] = start_time
+        if end_time:
+            query_kw['end'] = end_time
+        query_kw['limit'] = limit
+        c['log'] = rekishi.get_logs2(base_kw, query_kw, get_events=True)
+    else:
+        l = pynag.Parsers.LogFiles(maincfg=adagios.settings.nagios_config)
+        c['log'] = l.get_log_entries(start_time=start_time, end_time=end_time, **kwargs)[-limit:]
+        c['log'].reverse()
+
+    logs = c['logs'] = defaultdict(list)
     for line in c['log']:
-        if line['class_name'] not in c['logs'].keys():
-            c['logs'][line['class_name']] = []
-        c['logs'][line['class_name']].append(line)
-        c['logs']['all'].append(line)
+        class_name = line.get('class_name', '')
+        logs[class_name].append(line)
+        logs['all'].append(line)
+
     c['start_time'] = start_time
     c['end_time'] = end_time
     return c
