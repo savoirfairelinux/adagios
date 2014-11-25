@@ -215,6 +215,7 @@
             <table style="font-size: 80%;" class="table well table-condensed">
                 <thead>
                 <th>{% trans "Time" %}</th>
+                <th>{% trans "Host" %}</th>
                 <th>{% trans "Type" %}</th>
                 <th></th>
                 <th>{% trans "Message" %}</th>
@@ -225,6 +226,7 @@
                     {% endifchanged %}
                     <tr>
                         <td style="white-space: nowrap;">{{ line.time|timestamp|date:'Y-m-d H:i' }} </td>
+                        <td>{{ line.host_name }}</td>
                         <td class="nowrap">{{ line.type }}</td>
                         <td>
                             <a title="{{ line.class_name }} - {{ line.type }} "href="?type={{ line.type }}">
