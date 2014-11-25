@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.http import HttpResponse
+from __future__ import absolute_import
 
 import time
 from os.path import dirname
@@ -47,6 +47,7 @@ import adagios.businessprocess
 from django.core.urlresolvers import reverse
 from adagios.status import graphite
 from adagios.status import rekishi
+from rekishi.utils.influx import query_influx
 
 state = defaultdict(lambda: "unknown")
 state[0] = "ok"
@@ -829,56 +830,65 @@ def state_history(request):
         start_time = end_time - seconds_today
     start_time = int(start_time)
 
-    l = pynag.Parsers.LogFiles(maincfg=adagios.settings.nagios_config)
-    c['log'] = log = l.get_state_history(start_time=start_time, end_time=end_time,strict=False)
-    total_duration = end_time - start_time
-    c['total_duration'] = total_duration
-    css_hint = {}
+    css_hint = defaultdict(lambda: 'unknown')
     css_hint[0] = 'success'
     css_hint[1] = 'warning'
     css_hint[2] = 'danger'
     css_hint[3] = 'info'
-    last_item = None
 
+    total_duration = end_time - start_time
+    c['total_duration'] = total_duration
+
+    if adagios.settings.enable_rekishi:
+        search = request.GET.get('search')
+        host_or_service = '.*'
+        if search:
+            host_or_service += '.*%s.*' % search
+        logs = c['log'] = rekishi.get_logs2(
+            dict(host_or_service=host_or_service),
+            dict(start='%ss' % start_time, end='%ss' % end_time),
+            get_events=True,
+        )
+    else:
+        l = pynag.Parsers.LogFiles(maincfg=adagios.settings.nagios_config)
+        logs = c['log'] = l.get_state_history(start_time=start_time, end_time=end_time,strict=False)
+
+        search_filter = request.GET.copy()
+        for attr in ('start_time', 'end_time', 'start_time_picker',
+                     'start_hours', 'end_time_picker', 'end_hours', 'submit'):
+            search_filter.pop(attr, None)
+
+        logs = pynag.Utils.grep(logs, **search_filter)
+
+    #
     services = {}
-    search_filter = request.GET.copy()
-    search_filter.pop('start_time', None)
-    search_filter.pop('end_time', None)
-    search_filter.pop('start_time_picker', None)
-    search_filter.pop('start_hours', None)
-    search_filter.pop('end_time_picker', None)
-    search_filter.pop('end_hours', None)
-    search_filter.pop('submit', None)
-
-    log = pynag.Utils.grep(log, **search_filter)
-    for i in log:
-        short_name = "%s/%s" % (i['host_name'], i['service_description'])
+    for log in logs:
+        short_name = "%s/%s" % (log['host_name'], log['service_description'])
         if short_name not in services:
             s = {}
-            s['host_name'] = i['host_name']
-            s['service_description'] = i['service_description']
+            s['host_name'] = log['host_name']
+            s['service_description'] = log['service_description']
             s['log'] = []
             s['worst_logfile_state'] = 0
-            #s['log'] = [{'time':start_time,'state':3, 'plugin_output':'Unknown value here'}]
             services[short_name] = s
 
-        services[short_name]['log'].append(i)
+        services[short_name]['log'].append(log)
         services[short_name]['worst_logfile_state'] = max(
-            services[short_name]['worst_logfile_state'], i['state'])
-    for service in services.values():
+            services[short_name]['worst_logfile_state'], log['state'])
+
+    for service in services.itervalues():
         last_item = None
         service['sla'] = float(0)
         service['num_problems'] = 0
         service['duration'] = 0
-        for i in service['log']:
-            i['bootstrap_status'] = css_hint[i['state']]
-            if i['time'] < start_time:
-                i['time'] = start_time
+        for log in service['log']:
+            log['bootstrap_status'] = css_hint[log['state']]
+            if log['time'] < start_time:
+                log['time'] = start_time
             if last_item is not None:
-                last_item['end_time'] = i['time']
+                last_item['end_time'] = log['time']
                 #last_item['time'] = max(last_item['time'], start_time)
-                last_item['duration'] = duration = last_item[
-                    'end_time'] - last_item['time']
+                last_item['duration'] = duration = abs( last_item['end_time'] - last_item['time'] )
                 last_item['duration_percent'] = 100 * float(
                     duration) / total_duration
                 service['duration'] += last_item['duration_percent']
@@ -886,11 +896,11 @@ def state_history(request):
                     service['sla'] += last_item['duration_percent']
                 else:
                     service['num_problems'] += 1
-            last_item = i
+            last_item = log
+
         if not last_item is None:
             last_item['end_time'] = end_time
-            last_item['duration'] = duration = last_item[
-                'end_time'] - last_item['time']
+            last_item['duration'] = duration = abs( last_item['end_time'] - last_item['time'] )
             last_item['duration_percent'] = 100 * duration / total_duration
             service['duration'] += last_item['duration_percent']
             if last_item['state'] == 0:
