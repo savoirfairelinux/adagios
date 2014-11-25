@@ -34,7 +34,7 @@ def _get_rekishi_url(base, host, service, metric, from_):
     """
     host_ = _compliant_name(host)
     service_ = _compliant_name(service)
-    metric_ = _compliant_name(metric)
+    metric_ = quote(_compliant_name(metric))
     base = base.rstrip('/')
     title = adagios.settings.rekishi_title.format(**locals())
 
