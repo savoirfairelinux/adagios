@@ -49,7 +49,7 @@ def _get_rekishi_url(base, host, service, metric, from_):
     """
     host_ = _compliant_name(host)
     service_ = _compliant_name(service)
-    metric_ = quote(_compliant_name(metric))
+    metric_ = quote(_compliant_name(metric.replace("/", "%2F")))
     base = base.rstrip('/')
     title = adagios.settings.rekishi_title.format(**locals())
 
@@ -252,6 +252,7 @@ class AdagiosInfluxDbSeriePoint(object):
     _influx_class_2_adagios_class = {
         'ALERT':    'alerts',
         'FLAPPING': 'flapping',
+        'NOTIFICATION': 'notification',
     }
 
     _influx_service_state_2_adagios_state = defaultdict(

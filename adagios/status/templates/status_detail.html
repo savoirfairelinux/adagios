@@ -880,6 +880,11 @@
 
 
         {% if settings.enable_rekishi %}
+            // Clean text for JQuery
+            function jQuerySelectorEscape(expression) {
+                return expression.replace(/[!"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '\\$&');
+            }
+
             // Handle reload on graphs tab
             $( document ).ready( function() {
                 if ($("ul#objecttab > li").hasClass("active")) {
@@ -980,14 +985,14 @@
                         });
                         // Build pre_graph
                         pre_dg = new Dygraph(
-                            $("#pre_graph_{{ k }}")[0],
+                            $("#pre_graph_" + jQuerySelectorEscape('{{ k }}'))[0],
                             graph_data,
                             {
                                 labels: graph_labels,
                                 title: title,
                                 colors: ['#489CDF', '#FFDE00', 'red'],
                                 strokeWidth: 2,
-                                {{ k }}: {fillGraph: true},
+                                "{{ k }}": {fillGraph: true},
                                 labelsKMG2: true,
                                 legend: 'never',
                                 showLabelsOnHighlight: false,
@@ -1000,7 +1005,7 @@
                         // Build graph
                         if ($("li#rekishi_tab").hasClass("active")) {
                           dg = new Dygraph(
-                            $("#graph_{{ k }}")[0],
+                            $("#graph_" + jQuerySelectorEscape('{{ k }}'))[0],
                             graph_data,
                             { 
                                 labels: graph_labels,
@@ -1008,7 +1013,7 @@
                                 title: title,
                                 colors: ['#489CDF', '#FFDE00', 'red'],
                                 strokeWidth: 2,
-                                {{ k }}: {fillGraph: true},
+                                "{{ k }}": {fillGraph: true},
                                 labelsKMG2: true,
                                 labelsSeparateLines: true,
                                 legend: 'always',
@@ -1042,18 +1047,18 @@
                           allDygraphs.push(dg);
                         }
                     });
-                $("a#pre_{{ k }}").popover('show').popover('hide')
+                $("a#pre_" + jQuerySelectorEscape('{{ k }}')).popover('show').popover('hide'
                 {% endfor %}
             {% endfor %}
             }
 
            {% for graph in rekishi.graphs %}
               {% for k,v in graph.items %}
-                $("a#pre_{{ k }}").popover({
+                $("a#pre_" + jQuerySelectorEscape('{{ k }}')).popover({
                     placement: 'top',
                     trigger: 'hover',
                     template: '<div class="popover"><div class="arrow"></div><div class="popover-inner" style="width: 530px"><h3 class="popover-title"></h3><div class="popover-content" style="min-height: 200px"><p></p></div></div></div>',
-                    content: $("#rekishi-pre_graph-container_{{ k }}")
+                    content: $("#rekishi-pre_graph-container_" + jQuerySelectorEscape('{{ k }}'))
                 });
               {% endfor %}
             {% endfor %}
