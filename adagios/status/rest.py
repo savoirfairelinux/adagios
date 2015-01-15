@@ -21,6 +21,7 @@ Convenient stateless functions for the status module. These are meant for progra
 with status of Nagios.
 
 """
+from collections import OrderedDict
 
 import time
 import pynag.Control.Command
@@ -31,7 +32,11 @@ import pynag.Parsers
 import collections
 
 from django.utils.translation import ugettext as _
+
 from adagios import userdata
+from adagios.status import rekishi
+
+
 
 def hosts(request, fields=None, **kwargs):
     """ Get List of hosts. Any parameters will be passed straight throught to pynag.Utils.grep()
@@ -467,17 +472,33 @@ def top_alert_producers(limit=5, start_time=None, end_time=None):
         start_time = None
     if end_time == '':
         end_time = None
-    l = pynag.Parsers.LogFiles()
-    log = l.get_state_history(start_time=start_time, end_time=end_time)
-    top_alert_producers = collections.defaultdict(int)
+
+    if adagios.settings.enable_rekishi:
+        query_kw = {}
+        now = time.time()
+        if end_time is None:
+            end_time = now
+        if not start_time:
+            seconds_in_a_day = 60 * 60 * 24
+            seconds_today = end_time % seconds_in_a_day  # midnight of today
+            start_time = end_time - seconds_today
+        query_kw['start'] = start_time
+        query_kw['end'] = end_time
+        base_kw = OrderedDict()
+        base_kw['host'] = '.*'
+        log = rekishi.get_logs2(base_kw, query_kw, get_events=True)
+    else:
+        l = pynag.Parsers.LogFiles()
+        log = l.get_state_history(start_time=start_time, end_time=end_time)
+    ret_top_alert_producers = collections.defaultdict(int)
     for i in log:
         if 'host_name' in i and 'state' in i and i['state'] > 0:
-            top_alert_producers[i['host_name']] += 1
-    top_alert_producers = top_alert_producers.items()
-    top_alert_producers.sort(cmp=lambda a, b: cmp(a[1], b[1]), reverse=True)
-    if limit > len(top_alert_producers):
-        top_alert_producers = top_alert_producers[:int(limit)]
-    return top_alert_producers
+            ret_top_alert_producers[i['host_name']] += 1
+    ret_top_alert_producers = ret_top_alert_producers.items()
+    ret_top_alert_producers.sort(cmp=lambda a, b: cmp(a[1], b[1]), reverse=True)
+    if limit > len(ret_top_alert_producers):
+        ret_top_alert_producers = ret_top_alert_producers[:int(limit)]
+    return ret_top_alert_producers
 
 
 def log_entries(*args, **kwargs):
