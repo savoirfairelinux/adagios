@@ -223,13 +223,12 @@ def get_logs(request, host=None, service=None, start_time=None, end_time=None):
 class AdagiosInfluxDbSeriePoint(object):
     ''' For adagios special needs.
     This class is a wrapper around a rekishi influxdb serie point values.
-    You can use it a dict to directly access :
-     the related :
+    It's designed to be used as a dict to directly access the related :
         host_name
         service_description
         state
         time of the "point"
-        ..
+        etc..
     '''
     def __init__(self, orig_influx_serie, orig_influx_point, point_idx):
         self._influx_serie = orig_influx_serie
@@ -307,6 +306,12 @@ class AdagiosInfluxDbSeriePoint(object):
 
         logger.warning('Unhandled special value: %r', key)
         return key
+
+    def __contains__(self, item):
+        return (
+            item in self._special_values
+            or item in self._influx_serie['columns']
+        )
 
     def __getitem__(self, item):
         if item in self._supplementary_items:
