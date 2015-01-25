@@ -364,12 +364,19 @@ def service_detail(request, host_name, service_description):
 
     if adagios.settings.enable_rekishi:
         metrics = [x.label for x in perfdata.metrics]
+#        c['rekishi'] = rekishi.get(adagios.settings.rekishi_url,
+#                                   c['host_name'],
+#                                   c['service_description'],
+#                                   metrics,
+#                                   adagios.settings.REKISHI_PERIODS,
+#                                   )
         c['rekishi'] = rekishi.get(adagios.settings.rekishi_url,
                                    c['host_name'],
                                    c['service_description'],
-                                   metrics,
+                                   [""],
                                    adagios.settings.REKISHI_PERIODS,
                                    )
+        c['metrics'] = metrics
     
     return render_to_response('status_detail.html', c, context_instance=RequestContext(request))
 

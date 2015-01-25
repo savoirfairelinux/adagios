@@ -212,17 +212,17 @@ rekishi_url = "/rekishi/api/v1/dg/"
 # the CSS identifier only needs to be unique here (it will be prefixed)
 REKISHI_PERIODS = [
     # Displayed name, CSS identifier, rekishi period
-    ('4 hours',       'hours',        '-4h'),
-    ('One day',       'day',          '-1d'),
-    ('One week',      'week',         '-1w'),
-    ('30 days',       'month',        '-30d'),
+    ('15 minutes',  'quarter',      '-15m'),
+    ('1 hour',      'hour',         '-1h'),
+    ('12 hours',    'halfday',      '-12h'),
+    ('2 days',      'days',         '-2d'),
     ]
 
 # Title format to use on all rekishi graphs
 rekishi_title = "{host} - {service} - {metric}"
 
 # default selected (active) tab, and the one rendered in General-preview
-REKISHI_DEFAULT_TAB = 'day'
+REKISHI_DEFAULT_TAB = 'halfday'
 
 # Adagios specific configuration options. These are just the defaults,
 # Anything put in /etc/adagios.d/adagios.conf will overwrite this.

@@ -162,8 +162,10 @@
                                                 <a href="#" graph="{{ i.label }}" id="pre_{{ i.label }}" class="preview rekishi" title="{{ service_description }} {{ i.label }}">
                                                     <i class="glyph glyph-charts" id="rekishi-preview-{{ i.label }}"></i>
                                                 </a>
-                                                <div id="rekishi-pre_graph-container_{{ i.label }}">
-                                                    <div id="pre_graph_{{ i.label }}" style="max-height: 200px; max-width: 480px;" ></div>
+                                                <div id="rekishi-pre_graph-container_{{ i.label }}" style="" >
+                                                    <div id="pre_graph_{{ i.label }}" style="max-height: 200px; max-width: 480px;" >
+                                                      <img src="/media/external/select2/spinner.gif" />
+                                                    </div>
                                                 </div>
                                             </td>
                                         {% endif %}
@@ -579,17 +581,19 @@
                     <li{% if period.css_id == settings.REKISHI_DEFAULT_TAB %} class="active"{% endif %}><a href="#" id="rekishi_{{ period.css_id }}" range="{{ period.period_sec }}">{% trans period.name %}</a>
                   {% endfor %}
                 </ul>
-                <input type="checkbox" id="rekishiEvents"> {% trans "Show events" %}</input>
+                <!--<input type="checkbox" id="rekishiEvents"> {% trans "Show events" %}</input>-->
               </div>
             </div>
 
               {% for graph in rekishi.graphs %}
                 <div class="tab-pane{% if graph.css_id == settings.REKISHI_DEFAULT_TAB %} active{% endif %}" id="rekishi_{{ graph.css_id }}">
-                  {% for k,v in graph.items %}
+                  {% for k in metrics %}
                 <hr/>
                   <div class="row">
                     <div class="rekishi-graph-container span9" style="position: relative; height: 320px;">
-                      <div id="graph_{{ k }}" style="position: absolute; left: 10px; right: 10px; top: 40px; bottom: 10px;"></div>
+                      <div id="graph_{{ k }}" style="position: absolute; left: 10px; right: 10px; top: 40px; bottom: 10px;">
+                          <div style="margin-left:50px;"> Loading... <img src="/media/external/select2/spinner.gif" /></div>
+                      </div>
                     </div>
                     <div class="span3">
                     <div id="{{ k }}_legend"></div>
@@ -907,34 +911,47 @@
                 var now = new Date().getTime();
                 var time_range = [now + parseInt($("ul#rekishi_ul > li.active > a").attr("range")) * 1000, now];
 
+
+            metrics = new Array();
+            {% for i in metrics %}
+                metrics.push("{{i}}")
+            {% endfor %}
             {% for graph in rekishi.graphs %}
                 {% for k,v in graph.items %}
-                    $.get("{{ v }}", function(data){
+                    $.get("{{ v }}", function(datas){
+                      $.each(datas, function(index, data){
+                        label = ""
+
+                        $.each(metrics, function(index, metric_name) {
+                            if ( data.name.split(">").slice(-1)[0] == metric_name ) {
+                                label = metric_name
+                            }
+                        })
 
                         {# Find the units in the returned data so we can use them in axis title #}
                         var unitsIndex = 0;
-                        for(var i=0; i<data[0].labels.length; i++){
-                            if(data[0].labels[i] == "unit"){
+                        for(var i=0; i<data.labels.length; i++){
+                            if(data.labels[i] == "unit"){
                                 unitsIndex = i;
                             }
                         }
 
                         {# Fix the timestamps to JS dates #}
-                        for(var i=0; i<data[0].data.length; i++){
-                            data[0].data[i][0] = new Date(parseInt(data[0].data[i][0]) * 1000);
+                        for(var i=0; i<data.data.length; i++){
+                            data.data[i][0] = new Date(parseInt(data.data[i][0]) * 1000);
                         }
 
                         // Get indexes of datas
-                        var critical_i = data[0].labels.indexOf("critical");
-                        var warning_i = data[0].labels.indexOf("warning");
-                        var min_i = data[0].labels.indexOf("min");
-                        var max_i = data[0].labels.indexOf("max");
-                        var value_i = data[0].labels.indexOf("value");
-                        var time_i = data[0].labels.indexOf("time");
-                        var unit_i = data[0].labels.indexOf("unit");
+                        var critical_i = data.labels.indexOf("critical");
+                        var warning_i = data.labels.indexOf("warning");
+                        var min_i = data.labels.indexOf("min");
+                        var max_i = data.labels.indexOf("max");
+                        var value_i = data.labels.indexOf("value");
+                        var time_i = data.labels.indexOf("time");
+                        var unit_i = data.labels.indexOf("unit");
                         // Set datas
                         graph_data = new Array();
-                        $(data[0].data).each( function() {
+                        $(data.data).each( function() {
                             d = new Array();
                             d[0] = $(this)[time_i];
                             d[1] = $(this)[value_i];
@@ -945,19 +962,19 @@
                         // Set graph labels
                         graph_labels = new Array();
                         graph_labels[0] = "time";
-                        graph_labels[1] = "{{ k }}";
+                        graph_labels[1] = label;
                         graph_labels[2] = "warning";
                         graph_labels[3] = "critical";
                         // Set title
-                        var title = "{{ k }}";
-                        var unit = data[0].data[0][unit_i];
+                        var title = label;
+                        var unit = data.data[0][unit_i];
                         if ( unit ) {
                             title = title + " (" + unit + ")";
                         }
                         // set min and max
                         var max = 0;
                         var min = 0;
-                        $(data[0].data).each( function() {
+                        $(data.data).each( function() {
                             if ( min > $(this)[min_i] ){
                                 min = $(this)[min_i]
                             }
@@ -985,18 +1002,18 @@
                         });
                         // Build pre_graph
                         pre_dg = new Dygraph(
-                            $("#pre_graph_" + jQuerySelectorEscape('{{ k }}'))[0],
+                            $("#pre_graph_"  + jQuerySelectorEscape(label))[0],
                             graph_data,
                             {
                                 labels: graph_labels,
                                 title: title,
                                 colors: ['#489CDF', '#FFDE00', 'red'],
                                 strokeWidth: 2,
-                                "{{ k }}": {fillGraph: true},
+                                label: {fillGraph: true},
                                 labelsKMG2: true,
                                 legend: 'never',
                                 showLabelsOnHighlight: false,
-                                ylabel: data[0].data[0][unitsIndex],
+                                ylabel: data.data[0][unitsIndex],
 //                                valueRange: [min, max],
 //                                yRangePad: 20,
                                 dateWindow: time_range
@@ -1005,7 +1022,7 @@
                         // Build graph
                         if ($("li#rekishi_tab").hasClass("active")) {
                           dg = new Dygraph(
-                            $("#graph_" + jQuerySelectorEscape('{{ k }}'))[0],
+                            $("#graph_" + jQuerySelectorEscape(label))[0],
                             graph_data,
                             { 
                                 labels: graph_labels,
@@ -1013,18 +1030,18 @@
                                 title: title,
                                 colors: ['#489CDF', '#FFDE00', 'red'],
                                 strokeWidth: 2,
-                                "{{ k }}": {fillGraph: true},
+                                label: {fillGraph: true},
                                 labelsKMG2: true,
                                 labelsSeparateLines: true,
                                 legend: 'always',
                                 highlightCircleSize: 5,
                                 //drawPoints: true,
-                                labelsDiv: document.getElementById('{{ k }}_legend'),
+                                labelsDiv: document.getElementById(label +'_legend'),
 //                                showRangeSelector: true,
 //                                rangeSelectorHeight: 30,
 //                                rangeSelectorPlotStrokeColor: '#808FAB',
 //                                rangeSelectorPlotFillColor: '#A7B1C4',
-                                ylabel: data[0].data[0][unitsIndex],
+                                ylabel: data.data[0][unitsIndex],
                                 dateWindow: time_range,
                                 valueRange: [min, max],
                                 yRangePad: 20,
@@ -1046,22 +1063,28 @@
                           );
                           allDygraphs.push(dg);
                         }
-                    $("a#pre_" + jQuerySelectorEscape('{{ k }}')).popover('show').popover('hide')
+                        $("a#pre_" + jQuerySelectorEscape(label)).popover('show').popover('hide')
+                      });
                     });
+
+
+
+
                 {% endfor %}
             {% endfor %}
             }
 
-           {% for graph in rekishi.graphs %}
-              {% for k,v in graph.items %}
-                $("a#pre_" + jQuerySelectorEscape('{{ k }}')).popover({
-                    placement: 'top',
-                    trigger: 'hover',
-                    template: '<div class="popover"><div class="arrow"></div><div class="popover-inner" style="width: 530px"><h3 class="popover-title"></h3><div class="popover-content" style="min-height: 200px"><p></p></div></div></div>',
-                    content: $("#rekishi-pre_graph-container_" + jQuerySelectorEscape('{{ k }}'))
-                });
-              {% endfor %}
+
+            {% for metric in metrics %}
+            $("a#pre_" + jQuerySelectorEscape('{{ metric }}')).popover({
+                            placement: 'top',
+                            trigger: 'click',
+                            template: '<div class="popover"><div class="arrow"></div><div class="popover-inner" style="width: 530px"><h3 class="popover-title"></h3><div class="popover-content" style="min-height: 200px"><p></p></div></div></div>',
+                            content: $("#rekishi-pre_graph-container_" + jQuerySelectorEscape('{{ metric }}'))
+                        });
             {% endfor %}
+
+
 
 
             $("input#rekishiEvents").change( function() {
@@ -1106,6 +1129,7 @@
                     });
                 }
             });
+
 
             var desired_range = null;
             function approach_range() {
